@@ -1,52 +1,30 @@
 #include <iostream>
 #include "code/persistent_stack/call.h"
-#include "code/debug_utils/stack_check.h"
-#include "code/debug_utils/queue_check.h"
-#include "code/address/threadlocal_test.h"
-#include <thread>
 
-int main()
+int main(int argc, char** argv)
 {
-    persistent_stack persistent_stack("/home/ilyakoko/IFMO-diploma/stack_opt-1");
-    std::cout << "Stack address: " << (long long) persistent_stack.get_stack_ptr() << std::endl;
-    ram_stack stack;
-    check_stack_write(stack, persistent_stack);
-    check_stack_read(persistent_stack);
-    remove_frame(stack, persistent_stack);
-    std::cout << "After removal:" << std::endl;
-    check_stack_read(persistent_stack);
-    std::cout << "Queue check:" << std::endl;
-    check_queue();
+    if (argc != 4)
+    {
+        std::cout << "run: ./Diplom <mode> <number of threads> <path to directory with stacks>" << std::endl;
+        exit(0);
+    }
+    const std::string mode(argv[1]);
+    const uint32_t number_of_threads = static_cast<uint32_t>(std::stoi(argv[2]));
+    const std::string stacks_path(argv[3]);
 
-    std::cout << "threadlocal test" << std::endl;
-    std::thread t1(
-            []()
-            {
-                test::x = 0;
-                for (int i = 0; i < 10; ++i)
-                {
-                    ++test::x;
-                    std::string msg = "Thread 1, x = " + std::to_string(test::x) + "\n";
-                    std::cout << msg;
-                }
-            }
-    );
-
-    std::thread t2(
-            []()
-            {
-                test::x = 0;
-                for (int i = 0; i < 10; ++i)
-                {
-                    ++test::x;
-                    std::string msg = "Thread 2, x = " + std::to_string(test::x) + "\n";
-                    std::cout << msg;
-                }
-            }
-    );
-
-    t1.join();
-    t2.join();
+    if (mode == "run")
+    {
+        std::vector<persistent_stack> stacks;
+        for (uint32_t i = 0; i < number_of_threads; ++i)
+        {
+            const std::string file_name = stacks_path + "/stack-" + std::to_string(i);
+            stacks.emplace_back(file_name, false);
+        }
+    }
+    else
+    {
+        // TODO
+    }
 
 
     return 0;

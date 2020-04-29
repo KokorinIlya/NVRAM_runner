@@ -11,12 +11,18 @@
 #include <iostream>
 #include <utility>
 
-persistent_stack::persistent_stack(std::string stack_file_name)
+persistent_stack::persistent_stack(std::string stack_file_name, bool exists)
         : fd(-1),
           stack_ptr(nullptr),
           file_name(std::move(stack_file_name))
 {
-    if ((fd = open(file_name.c_str(), O_CREAT | O_RDWR, 0666)) < 0)
+    int create_flag = 0;
+    if (!exists)
+    {
+        create_flag = O_CREAT;
+    }
+    std::cout << "Opening file " << file_name << std::endl;
+    if ((fd = open(file_name.c_str(), create_flag | O_RDWR, 0666)) < 0)
     {
         throw std::runtime_error("Error while opening file " + file_name);
     }
@@ -66,13 +72,16 @@ persistent_stack::persistent_stack(std::string stack_file_name)
 
 persistent_stack::~persistent_stack()
 {
-    if (munmap(stack_ptr, PMEM_STACK_SIZE) == -1)
+    if (fd != -1 && stack_ptr != nullptr)
     {
-        std::cerr << "Error while munmap file " << file_name << std::endl;
-    }
-    if (close(fd) == -1)
-    {
-        std::cerr << "Error while closing file " << file_name << std::endl;
+        if (munmap(stack_ptr, PMEM_STACK_SIZE) == -1)
+        {
+            std::cerr << "Error while munmap file " << file_name << std::endl;
+        }
+        if (close(fd) == -1)
+        {
+            std::cerr << "Error while closing file " << file_name << std::endl;
+        }
     }
 }
 
@@ -84,4 +93,11 @@ const uint8_t* persistent_stack::get_stack_ptr() const
 uint8_t* persistent_stack::get_stack_ptr()
 {
     return stack_ptr;
+}
+
+persistent_stack::persistent_stack(persistent_stack&& other) noexcept
+        : fd(other.fd), stack_ptr(other.stack_ptr), file_name(std::move(other.file_name))
+{
+    other.fd = -1;
+    other.stack_ptr = nullptr;
 }

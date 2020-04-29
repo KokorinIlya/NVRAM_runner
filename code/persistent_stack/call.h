@@ -16,4 +16,6 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
 
 void remove_frame(ram_stack& stack, persistent_stack& persistent_stack);
 
+void do_call(std::string const& function_name, std::vector<uint8_t> const& args);
+
 #endif //DIPLOM_CALL_H

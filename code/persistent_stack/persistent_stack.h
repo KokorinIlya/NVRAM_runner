@@ -10,7 +10,13 @@
 
 struct persistent_stack
 {
-    explicit persistent_stack(std::string file_name);
+    explicit persistent_stack(std::string file_name, bool exists);
+
+    persistent_stack(persistent_stack&& other) noexcept;
+
+    persistent_stack(const persistent_stack& other) = delete;
+
+    persistent_stack operator=(const persistent_stack& other) = delete;
 
     ~persistent_stack();
 

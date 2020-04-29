@@ -92,3 +92,8 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
     std::memcpy(stack_mem + offset - 1, &stack_end_marker, 1);
     pmem_do_flush(stack_mem + offset - 1, 1);
 }
+
+void do_call(const std::string& function_name, const std::vector<uint8_t>& args)
+{
+    // TODO: add thread-local ram-stack
+}
