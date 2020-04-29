@@ -21,7 +21,9 @@ persistent_stack::persistent_stack(std::string stack_file_name)
         throw std::runtime_error("Error while opening file " + file_name);
     }
 
-    if ((errno = posix_fallocate(fd, 0, PMEM_STACK_SIZE)) != 0)
+    std::cout << "fd = " << fd << std::endl;
+
+    if (posix_fallocate(fd, 0, PMEM_STACK_SIZE) != 0)
     {
         if (close(fd) == -1)
         {
@@ -38,7 +40,10 @@ persistent_stack::persistent_stack(std::string stack_file_name)
         }
     }
 
-    void* pmemaddr = mmap(nullptr, PMEM_STACK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    void* pmemaddr =
+            mmap(nullptr, PMEM_STACK_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+    std::cout << "pmemaddr = " << (long long) pmemaddr << std::endl;
 
     if (pmemaddr == nullptr)
     {

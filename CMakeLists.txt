@@ -17,7 +17,7 @@ add_executable(
         code/common/pmem_utils.cpp
         code/debug_utils/queue_check.cpp
         code/persistent_stack/call.cpp
-)
+        code/address/threadlocal_test.cpp)
 target_link_libraries(Diplom pmem pthread)
 
 
