@@ -9,7 +9,7 @@ link_directories(/opt/sw/pmdk/pmdk.old/lib)
 add_executable(
         Diplom
         main.cpp
-        code/persistent_stack/persistent_stack.cpp
+        code/persistent_stack/ram_stack.cpp
         code/address/pmem_address_holder.cpp
         code/address/function_address_holder.cpp
         code/persistent_stack/stack_holder.cpp

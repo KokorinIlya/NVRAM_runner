@@ -8,7 +8,12 @@
 #include <string>
 #include <vector>
 #include "stack_holder.h"
+#include "ram_stack.h"
 
-void do_call(std::string const& function_name, std::vector<uint32_t> args);
+ram_stack read_stack(const stack_holder& stack_holder);
+
+void add_new_frame(ram_stack& stack, stack_frame const& frame, stack_holder& stack_holder);
+
+void remove_frame(ram_stack& stack, stack_holder& stack_holder);
 
 #endif //DIPLOM_CALL_H

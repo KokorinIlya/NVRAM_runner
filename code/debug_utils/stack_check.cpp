@@ -4,8 +4,9 @@
 
 #include "stack_check.h"
 #include <iostream>
+#include "../persistent_stack/call.h"
 
-void check_stack_write(persistent_stack& stack, stack_holder &holder)
+void check_stack_write(ram_stack& stack, stack_holder &holder)
 {
     stack_frame frame_1 = stack_frame
             {
@@ -31,7 +32,7 @@ void check_stack_write(persistent_stack& stack, stack_holder &holder)
 
 void check_stack_read(const stack_holder &holder)
 {
-    persistent_stack another_stack = read_stack(holder);
+    ram_stack another_stack = read_stack(holder);
     std::cout << "Stack size = " << another_stack.size() << std::endl;
     while (!another_stack.empty())
     {
