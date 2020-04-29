@@ -1,4 +1,4 @@
-//stack_holder
+//
 // Created by ilya on 28.04.2020.
 //
 

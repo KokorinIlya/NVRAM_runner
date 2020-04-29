@@ -26,7 +26,7 @@ std::pair<stack_frame, bool> read_frame(const uint8_t* frame_mem)
     return std::make_pair(stack_frame{function_name, args}, is_last);
 }
 
-ram_stack read_stack(const stack_holder& stack_holder)
+ram_stack read_stack(const persistent_stack& stack_holder)
 {
     ram_stack stack;
     uint64_t cur_offset = 0;
@@ -48,7 +48,7 @@ ram_stack read_stack(const stack_holder& stack_holder)
     }
 }
 
-void add_new_frame(ram_stack& stack, stack_frame const& frame, stack_holder& stack_holder)
+void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack& stack_holder)
 {
     uint8_t* const stack_mem = stack_holder.get_stack_ptr();
     const uint64_t new_frame_offset = get_stack_end(stack);
@@ -82,7 +82,7 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, stack_holder& sta
     }
 }
 
-void remove_frame(ram_stack& stack, stack_holder& stack_holder)
+void remove_frame(ram_stack& stack, persistent_stack& stack_holder)
 {
     uint8_t* const stack_mem = stack_holder.get_stack_ptr();
     const positioned_frame last_frame = stack.top();

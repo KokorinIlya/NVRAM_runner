@@ -5,7 +5,7 @@
 
 int main()
 {
-    stack_holder stack_holder("/home/ilyakoko/IFMO-diploma/stack-1");
+    persistent_stack stack_holder("/home/ilyakoko/IFMO-diploma/stack-1");
     std::cout << "Stack address: " << (long long) stack_holder.get_stack_ptr() << std::endl;
     ram_stack stack;
     check_stack_write(stack, stack_holder);

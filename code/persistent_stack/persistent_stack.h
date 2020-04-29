@@ -2,17 +2,17 @@
 // Created by ilya on 29.04.2020.
 //
 
-#ifndef DIPLOM_STACK_HOLDER_H
-#define DIPLOM_STACK_HOLDER_H
+#ifndef DIPLOM_PERSISTENT_STACK_H
+#define DIPLOM_PERSISTENT_STACK_H
 
 #include <cstdint>
 #include <string>
 
-struct stack_holder
+struct persistent_stack
 {
-    explicit stack_holder(std::string file_name);
+    explicit persistent_stack(std::string file_name);
 
-    ~stack_holder();
+    ~persistent_stack();
 
     const uint8_t* get_stack_ptr() const;
 
@@ -24,4 +24,4 @@ private:
     std::string file_name;
 };
 
-#endif //DIPLOM_STACK_HOLDER_H
+#endif //DIPLOM_PERSISTENT_STACK_H

@@ -12,7 +12,7 @@ add_executable(
         code/persistent_stack/ram_stack.cpp
         code/address/pmem_address_holder.cpp
         code/address/function_address_holder.cpp
-        code/persistent_stack/stack_holder.cpp
+        code/persistent_stack/persistent_stack.cpp
         code/debug_utils/stack_check.cpp
         code/common/pmem_utils.cpp
         code/debug_utils/queue_check.cpp

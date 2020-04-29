@@ -2,7 +2,7 @@
 // Created by ilya on 29.04.2020.
 //
 
-#include "stack_holder.h"
+#include "persistent_stack.h"
 #include <fcntl.h>
 #include <stdexcept>
 #include <unistd.h>
@@ -11,7 +11,7 @@
 #include <iostream>
 #include <utility>
 
-stack_holder::stack_holder(std::string stack_file_name)
+persistent_stack::persistent_stack(std::string stack_file_name)
         : fd(-1),
           stack_ptr(nullptr),
           file_name(std::move(stack_file_name))
@@ -59,7 +59,7 @@ stack_holder::stack_holder(std::string stack_file_name)
     stack_ptr = static_cast<uint8_t*>(pmemaddr);
 }
 
-stack_holder::~stack_holder()
+persistent_stack::~persistent_stack()
 {
     if (munmap(stack_ptr, PMEM_STACK_SIZE) == -1)
     {
@@ -71,12 +71,12 @@ stack_holder::~stack_holder()
     }
 }
 
-const uint8_t* stack_holder::get_stack_ptr() const
+const uint8_t* persistent_stack::get_stack_ptr() const
 {
     return stack_ptr;
 }
 
-uint8_t* stack_holder::get_stack_ptr()
+uint8_t* persistent_stack::get_stack_ptr()
 {
     return stack_ptr;
 }

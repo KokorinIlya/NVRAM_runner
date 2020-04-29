@@ -5,10 +5,10 @@
 #ifndef DIPLOM_STACK_CHECK_H
 #define DIPLOM_STACK_CHECK_H
 
-#include "../persistent_stack/stack_holder.h"
+#include "../persistent_stack/persistent_stack.h"
 #include "../persistent_stack/ram_stack.h"
 
-void check_stack_write(ram_stack& stack, stack_holder& holder);
-void check_stack_read(const stack_holder& holder);
+void check_stack_write(ram_stack& stack, persistent_stack& holder);
+void check_stack_read(const persistent_stack& holder);
 
 #endif //DIPLOM_STACK_CHECK_H
