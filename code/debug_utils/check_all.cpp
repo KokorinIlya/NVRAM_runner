@@ -13,7 +13,7 @@
 void check_all()
 {
     persistent_stack persistent_stack("/home/ilyakoko/IFMO-diploma/stack_opt-1", false);
-    std::cout << "Stack address: " << (long long) persistent_stack.get_stack_ptr() << std::endl;
+    std::cout << "Stack globals: " << (long long) persistent_stack.get_stack_ptr() << std::endl;
     ram_stack stack;
     check_stack_write(stack, persistent_stack);
     check_stack_read(persistent_stack);

@@ -11,14 +11,16 @@ add_executable(
         Diplom
         main.cpp
         code/persistent_stack/ram_stack.cpp
-        code/address/pmem_address_holder.cpp
-        code/address/function_address_holder.cpp
+        code/globals/pmem_address_holder.cpp
+        code/globals/function_address_holder.cpp
         code/persistent_stack/persistent_stack.cpp
         code/debug_utils/stack_check.cpp
         code/common/pmem_utils.cpp
         code/debug_utils/queue_check.cpp
         code/persistent_stack/call.cpp
-        code/address/thread_local_non_owning_storage.h code/debug_utils/check_all.cpp code/debug_utils/check_all.h)
+        code/debug_utils/check_all.cpp
+        code/globals/thread_local_stack_storage.cpp
+)
 target_link_libraries(Diplom pmem pthread)
 
 

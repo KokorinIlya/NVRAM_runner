@@ -10,19 +10,20 @@
 #include "../common/constants_and_types.h"
 #include <iostream>
 #include <utility>
+#include <cstdio>
 
-persistent_stack::persistent_stack(std::string stack_file_name, bool exists)
+
+persistent_stack::persistent_stack(std::string stack_file_name, bool open_existing)
         : fd(-1),
           stack_ptr(nullptr),
           file_name(std::move(stack_file_name))
 {
-    int create_flag = 0;
-    if (!exists)
+    if (!open_existing)
     {
-        create_flag = O_CREAT;
+        remove(file_name.c_str());
     }
     std::cout << "Opening file " << file_name << std::endl;
-    if ((fd = open(file_name.c_str(), create_flag | O_RDWR, 0666)) < 0)
+    if ((fd = open(file_name.c_str(), O_CREAT | O_RDWR, 0666)) < 0)
     {
         throw std::runtime_error("Error while opening file " + file_name);
     }
@@ -74,6 +75,8 @@ persistent_stack::~persistent_stack()
 {
     if (fd != -1 && stack_ptr != nullptr)
     {
+        std::cout << "Closing file " << file_name << ", fd = "
+                  << fd << ", addr = " << (long long) stack_ptr << std::endl;
         if (munmap(stack_ptr, PMEM_STACK_SIZE) == -1)
         {
             std::cerr << "Error while munmap file " << file_name << std::endl;
