@@ -42,7 +42,7 @@ int main(int argc, char** argv)
                 std::cout << msg << std::endl;
                 stack_frame frame_1 = stack_frame
                         {
-                                "some_function_name",
+                                "some_function_name_" + std::to_string(i),
                                 std::vector<uint8_t>({1, 3, 3, 7})
                         };
                 add_new_frame(
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
                 stack_frame frame_2 = stack_frame
                         {
-                                "another_function_name",
+                                "another_function_name_" + std::to_string(i),
                                 std::vector<uint8_t>({2, 5, 1, 7})
                         };
                 add_new_frame(
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
                 stack_frame frame_3 = stack_frame
                         {
-                                "one_more_function_name",
+                                "one_more_function_name_" + std::to_string(i),
                                 std::vector<uint8_t>({1, 3, 5, 7, 9})
                         };
                 add_new_frame(
