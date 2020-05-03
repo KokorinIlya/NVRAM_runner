@@ -6,6 +6,8 @@
 #include "cstring"
 #include <utility>
 #include "../common/pmem_utils.h"
+#include "../globals/thread_local_non_owning_storage.h"
+#include "../globals/thread_local_owning_storage.h"
 
 std::pair<stack_frame, bool> read_frame(const uint8_t* frame_mem)
 {
@@ -63,16 +65,15 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
     while (true)
     {
         const std::pair<stack_frame, bool> read_result = read_frame(stack_mem + cur_offset);
-        const stack_frame& cur_frame = read_result.first;
         const bool is_last = read_result.second;
-        const positioned_frame pos_frame = positioned_frame{cur_frame, cur_offset};
+        const positioned_frame pos_frame = positioned_frame{read_result.first, cur_offset};
         stack.push(pos_frame);
 
         if (is_last)
         {
             return stack;
         }
-        cur_offset += get_frame_size(cur_frame);
+        cur_offset += get_frame_size(read_result.first);
     }
 }
 
@@ -143,5 +144,10 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
 
 void do_call(const std::string& function_name, const std::vector<uint8_t>& args)
 {
-    // TODO: add thread-local ram-stack
+    // TODO: test in regular & concurrent mode (like stack)
+    add_new_frame(
+            thread_local_owning_storage<ram_stack>::get_object(),
+            stack_frame{function_name, args},
+            *thread_local_non_owning_storage<persistent_stack>::ptr
+    );
 }

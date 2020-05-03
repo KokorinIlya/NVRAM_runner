@@ -41,4 +41,6 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack);
 
 void do_call(std::string const& function_name, std::vector<uint8_t> const& args);
 
+// TODO: write & read answer from stack
+
 #endif //DIPLOM_CALL_H

@@ -134,6 +134,10 @@ TEST(persistent_stack_multithreading, add)
         }
     };
     restoration();
+    for (std::string const& cur_file_name: file_names)
+    {
+        remove(cur_file_name.c_str());
+    }
 }
 
 TEST(persistent_stack_multithreading, add_and_remove)
@@ -255,5 +259,9 @@ TEST(persistent_stack_multithreading, add_and_remove)
             EXPECT_TRUE(t_correct[i]);
         }
     };
+    for (std::string const& cur_file_name: file_names)
+    {
+        remove(cur_file_name.c_str());
+    }
     restoration();
 }
