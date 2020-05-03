@@ -1,7 +1,7 @@
 #include <iostream>
 #include "code/persistent_stack/call.h"
 #include "code/globals/thread_local_non_owning_storage.h"
-#include "code/globals/thread_local_stack_storage.h"
+#include "code/globals/thread_local_owning_storage.h"
 #include <thread>
 #include <unistd.h>
 #include <functional>
@@ -31,9 +31,8 @@ int main(int argc, char** argv)
         {
             std::function<void()> thread_action = [&stacks, i]()
             {
-                thread_local_stack_storage::set_stack(ram_stack());
-                thread_local_non_owning_storage<persistent_stack>::ptr =
-                        &stacks[i];
+                thread_local_owning_storage<ram_stack>::set_object(ram_stack());
+                thread_local_non_owning_storage<persistent_stack>::ptr = &stacks[i];
                 sleep(2);
                 persistent_stack* stack_ptr =
                         thread_local_non_owning_storage<persistent_stack>::ptr;
@@ -46,7 +45,7 @@ int main(int argc, char** argv)
                                 std::vector<uint8_t>({1, 3, 3, 7})
                         };
                 add_new_frame(
-                        thread_local_stack_storage::get_stack(),
+                        thread_local_owning_storage<ram_stack>::get_object(),
                         frame_1,
                         *thread_local_non_owning_storage<persistent_stack>::ptr
                 );
@@ -57,7 +56,7 @@ int main(int argc, char** argv)
                                 std::vector<uint8_t>({2, 5, 1, 7})
                         };
                 add_new_frame(
-                        thread_local_stack_storage::get_stack(),
+                        thread_local_owning_storage<ram_stack>::get_object(),
                         frame_2,
                         *thread_local_non_owning_storage<persistent_stack>::ptr
                 );
@@ -68,12 +67,12 @@ int main(int argc, char** argv)
                                 std::vector<uint8_t>({1, 3, 5, 7, 9})
                         };
                 add_new_frame(
-                        thread_local_stack_storage::get_stack(),
+                        thread_local_owning_storage<ram_stack>::get_object(),
                         frame_3,
                         *thread_local_non_owning_storage<persistent_stack>::ptr
                 );
                 remove_frame(
-                        thread_local_stack_storage::get_stack(),
+                        thread_local_owning_storage<ram_stack>::get_object(),
                         *thread_local_non_owning_storage<persistent_stack>::ptr
                 );
             };
@@ -107,9 +106,9 @@ int main(int argc, char** argv)
                                   std::to_string((long long) stack_ptr->get_stack_ptr());
                 std::cout << msg << std::endl;
                 ram_stack read_ram_stack = read_stack(*stack_ptr);
-                thread_local_stack_storage::set_stack(read_ram_stack);
+                thread_local_owning_storage<ram_stack>::get_object();
                 sleep(2);
-                ram_stack ram_stack_from_mem = thread_local_stack_storage::get_stack();
+                ram_stack ram_stack_from_mem = thread_local_owning_storage<ram_stack>::get_object();
                 std::string stack_content = "Thread " + std::to_string(i) +
                                             ", stack size = " +
                                             std::to_string(ram_stack_from_mem.size()) + "\n";
