@@ -9,18 +9,46 @@
 
 std::pair<stack_frame, bool> read_frame(const uint8_t* frame_mem)
 {
+    uint64_t cur_offset = 0;
+
+    /*
+     * Read 8 bytes of function name len
+     */
     uint64_t function_name_len;
-    std::memcpy(&function_name_len, frame_mem, 8);
+    std::memcpy(&function_name_len, frame_mem + cur_offset, 8);
+    cur_offset += 8;
+
+    /*
+     * Read function_name_len bytes of function name
+     */
     std::string function_name(function_name_len, '#');
-    std::memcpy(&function_name[0], frame_mem + 8, function_name_len);
+    std::memcpy(&function_name[0], frame_mem + cur_offset, function_name_len);
+    cur_offset += function_name_len;
 
+    /*
+     * Read 8 bytes of args len
+     */
     uint64_t args_len;
-    std::memcpy(&args_len, frame_mem + 8 + function_name_len, 8);
-    std::vector<uint8_t> args(args_len);
-    std::memcpy(args.data(), frame_mem + 16 + function_name_len, args_len);
+    std::memcpy(&args_len, frame_mem + cur_offset, 8);
+    cur_offset += 8;
 
+    /*
+     * Read args_len bytes of args
+     */
+    std::vector<uint8_t> args(args_len);
+    std::memcpy(args.data(), frame_mem + cur_offset, args_len);
+    cur_offset += args_len;
+
+    /*
+     * Skip 8 bytes of answer
+     */
+    cur_offset += 8;
+
+    /*
+     * Read 1 byte of end marker
+     */
     uint8_t end_marker;
-    std::memcpy(&end_marker, frame_mem + 16 + function_name_len + args_len, 1);
+    std::memcpy(&end_marker, frame_mem + cur_offset, 1);
     const bool is_last = end_marker == 0x1;
 
     return std::make_pair(stack_frame{function_name, args}, is_last);
@@ -56,20 +84,40 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
 
     uint64_t cur_offset = new_frame_offset;
 
+    /*
+     * Write 8 bytes of function name len
+     */
     const uint64_t function_name_len = frame.function_name.size();
     std::memcpy(stack_mem + cur_offset, &function_name_len, 8);
     cur_offset += 8;
 
+    /*
+     * Write function_name_len bytes of function name
+     */
     std::memcpy(stack_mem + cur_offset, frame.function_name.data(), function_name_len);
     cur_offset += function_name_len;
 
+    /*
+     * Write 8 bytes of args len
+     */
     const uint64_t args_len = frame.args.size();
     std::memcpy(stack_mem + cur_offset, &args_len, 8);
     cur_offset += 8;
 
+    /*
+     * Write args_len bytes of args len
+     */
     std::memcpy(stack_mem + cur_offset, frame.args.data(), args_len);
     cur_offset += args_len;
 
+    /*
+     * Skip 8 bytes for answer, do not write anything
+     */
+    cur_offset += 8;
+
+    /*
+     * Write 1 byte of stack end marker
+     */
     const uint8_t stack_end_marker = 0x1;
     std::memcpy(stack_mem + cur_offset, &stack_end_marker, 1);
     pmem_do_flush(stack_mem + new_frame_offset, get_frame_size(frame));

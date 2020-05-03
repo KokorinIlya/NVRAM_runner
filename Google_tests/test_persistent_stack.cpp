@@ -168,3 +168,4 @@ TEST(persistent_stack, add_and_remove_multiple_frames)
         perror("Close file");
     }
 }
+

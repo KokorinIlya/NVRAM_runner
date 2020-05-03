@@ -15,6 +15,7 @@ add_executable(
         function_address_holder_test.cpp
         thread_local_non_owning_storage_test.cpp
         thread_local_owning_storage_test.cpp
+        persistent_stack_multithreading_test.cpp
         ../code/persistent_stack/ram_stack.cpp
         ../code/globals/function_address_holder.cpp
         ../code/persistent_stack/persistent_stack.cpp
