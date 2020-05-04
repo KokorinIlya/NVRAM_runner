@@ -21,7 +21,8 @@ persistent_stack::persistent_stack(std::string stack_file_name, bool open_existi
     if (!open_existing)
     {
         remove(file_name.c_str());
-        if ((fd = open(file_name.c_str(), O_CREAT | O_RDWR, 0666)) < 0)
+        fd = open(file_name.c_str(), O_CREAT | O_RDWR, 0666);
+        if (fd < 0)
         {
             throw std::runtime_error("Error while opening file " + file_name);
         }

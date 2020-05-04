@@ -7,19 +7,19 @@
 #include <functional>
 #include <thread>
 
-TEST(thread_local_stack_storage, get_without_set)
+TEST(thread_local_owning_storage, get_without_set)
 {
     EXPECT_THROW(thread_local_owning_storage<int>::get_object(),
                  std::runtime_error);
 }
 
-TEST(thread_local_stack_storage, get_after_set)
+TEST(thread_local_owning_storage, get_after_set)
 {
     thread_local_owning_storage<int>::set_object(1);
     EXPECT_EQ(thread_local_owning_storage<int>::get_object(), 1);
 }
 
-TEST(thread_local_stack_storage, get_and_change)
+TEST(thread_local_owning_storage, get_and_change)
 {
     thread_local_owning_storage<int>::set_object(1);
     EXPECT_EQ(thread_local_owning_storage<int>::get_object(), 1);
@@ -27,7 +27,7 @@ TEST(thread_local_stack_storage, get_and_change)
     EXPECT_EQ(thread_local_owning_storage<int>::get_object(), 2);
 }
 
-TEST(thread_local_stack_storage, multiple_sets)
+TEST(thread_local_owning_storage, multiple_sets)
 {
     thread_local_owning_storage<int>::set_object(1);
     EXPECT_EQ(thread_local_owning_storage<int>::get_object(), 1);
@@ -36,7 +36,7 @@ TEST(thread_local_stack_storage, multiple_sets)
     EXPECT_EQ(thread_local_owning_storage<int>::get_object(), 3);
 }
 
-TEST(thread_local_stack_storage, multiple_types)
+TEST(thread_local_owning_storage, multiple_types)
 {
     thread_local_owning_storage<int>::set_object(1);
     EXPECT_EQ(thread_local_owning_storage<int>::get_object(), 1);
@@ -92,7 +92,7 @@ namespace
     };
 }
 
-TEST(thread_local_stack_storage, multiple_threads)
+TEST(thread_local_owning_storage, multiple_threads)
 {
     int a = 100;
     int b = 200;
@@ -105,7 +105,7 @@ TEST(thread_local_stack_storage, multiple_threads)
     EXPECT_TRUE(t1_correct && t2_correct);
 }
 
-TEST(thread_local_stack_storage, owning)
+TEST(thread_local_owning_storage, owning)
 {
     int t_correct = 0;
 

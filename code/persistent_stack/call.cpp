@@ -8,6 +8,7 @@
 #include "../common/pmem_utils.h"
 #include "../globals/thread_local_non_owning_storage.h"
 #include "../globals/thread_local_owning_storage.h"
+#include "../globals/function_address_holder.h"
 
 std::pair<stack_frame, bool> read_frame(const uint8_t* frame_mem)
 {
@@ -144,10 +145,15 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
 
 void do_call(const std::string& function_name, const std::vector<uint8_t>& args)
 {
-    // TODO: test in regular & concurrent mode (like stack)
     add_new_frame(
             thread_local_owning_storage<ram_stack>::get_object(),
             stack_frame{function_name, args},
+            *thread_local_non_owning_storage<persistent_stack>::ptr
+    );
+    function_ptr f_ptr = function_address_holder::functions[function_name].first;
+    f_ptr(args.data());
+    remove_frame(
+            thread_local_owning_storage<ram_stack>::get_object(),
             *thread_local_non_owning_storage<persistent_stack>::ptr
     );
 }

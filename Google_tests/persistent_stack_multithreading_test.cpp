@@ -86,12 +86,10 @@ TEST(persistent_stack_multithreading, add)
             stacks.emplace_back(file_names[i], true);
         }
         std::vector<std::thread> threads;
-        std::vector<bool> t_correct({false, false, false, false});
         for (uint32_t i = 0; i < number_of_threads; ++i)
         {
-            std::function<void()> thread_action = [&stacks, i, &t_correct]()
+            std::function<void()> thread_action = [&stacks, i]()
             {
-                t_correct[i] = true;
                 uint8_t small_i = static_cast<uint8_t>(i);
                 thread_local_non_owning_storage<persistent_stack>::ptr =
                         &stacks[i];
@@ -99,38 +97,46 @@ TEST(persistent_stack_multithreading, add)
                         read_stack(*thread_local_non_owning_storage<persistent_stack>::ptr)
                 );
                 ram_stack& r_stack = thread_local_owning_storage<ram_stack>::get_object();
-                t_correct[i] = t_correct[i] && (r_stack.size() == 3);
+                EXPECT_EQ(r_stack.size(), 3);
 
                 stack_frame frame_3 = r_stack.top().frame;
                 r_stack.pop();
-                t_correct[i] = t_correct[i] && (frame_3.function_name ==
-                                                "one_more_function_name_" + std::to_string(i));
-                t_correct[i] = t_correct[i] &&
-                               (frame_3.args == std::vector<uint8_t>({1, 3, 5, 7, 9, small_i}));
+                EXPECT_EQ(
+                        frame_3.function_name,
+                        "one_more_function_name_" + std::to_string(i)
+                );
+                EXPECT_EQ(
+                        frame_3.args,
+                        std::vector<uint8_t>({1, 3, 5, 7, 9, small_i})
+                );
 
                 stack_frame frame_2 = r_stack.top().frame;
                 r_stack.pop();
-                t_correct[i] = t_correct[i] && (frame_2.function_name ==
-                                                "another_function_name_" + std::to_string(i));
-                t_correct[i] = t_correct[i] &&
-                               (frame_2.args == std::vector<uint8_t>({2, 5, 1, 7, small_i}));
+                EXPECT_EQ(
+                        frame_2.function_name,
+                        "another_function_name_" + std::to_string(i)
+                );
+                EXPECT_EQ(
+                        frame_2.args,
+                        std::vector<uint8_t>({2, 5, 1, 7, small_i})
+                );
 
                 stack_frame frame_1 = r_stack.top().frame;
                 r_stack.pop();
-                t_correct[i] = t_correct[i] && (frame_1.function_name ==
-                                                "some_function_name_" + std::to_string(i));
-                t_correct[i] = t_correct[i] &&
-                               (frame_1.args == std::vector<uint8_t>({1, 3, 3, 7, small_i}));
+                EXPECT_EQ(
+                        frame_1.function_name,
+                        "some_function_name_" + std::to_string(i)
+                );
+                EXPECT_EQ(
+                        frame_1.args,
+                        std::vector<uint8_t>({1, 3, 3, 7, small_i})
+                );
             };
             threads.emplace_back(std::thread(thread_action));
         }
         for (std::thread& cur_thread: threads)
         {
             cur_thread.join();
-        }
-        for (uint32_t i = 0; i < number_of_threads; i++)
-        {
-            EXPECT_TRUE(t_correct[i]);
         }
     };
     restoration();
@@ -259,9 +265,9 @@ TEST(persistent_stack_multithreading, add_and_remove)
             EXPECT_TRUE(t_correct[i]);
         }
     };
+    restoration();
     for (std::string const& cur_file_name: file_names)
     {
         remove(cur_file_name.c_str());
     }
-    restoration();
 }
