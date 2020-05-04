@@ -9,6 +9,8 @@
 #include <vector>
 #include "persistent_stack.h"
 #include "ram_stack.h"
+#include "../globals/thread_local_non_owning_storage.h"
+#include "../globals/thread_local_owning_storage.h"
 
 /**
  * Reads stack from persistent emory to RAM. This function can be used
@@ -39,8 +41,36 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
  */
 void remove_frame(ram_stack& stack, persistent_stack& persistent_stack);
 
-void do_call(std::string const& function_name, std::vector<uint8_t> const& args);
+/**
+ * Performs call of function with specified name and args. Performs sequence of actions:
+ * <ul>
+ *  <li>
+ *      Puts new frame, corresponding to the function, being called, to the top of the stack.
+ *  </li>
+ *  <li>
+ *      Calls function with specified name, using specified args as parameters of the call.
+ *      Pointer to function is taken from the map with address of functions, therefore
+ *      function, that is being called, must be registered in the map.
+ *  </li>
+ *  <li>
+ *      Removes last frame from the top of the stack.
+ *  </li>
+ * </ul>
+ * If call_recover is false (usually), calls ordinary version of the function. Otherwise,
+ * calls recovery version.
+ * @param function_name - name of the function to call. Must be a valid key of the map with
+ *                        addresses of the function.
+ * @param args - arguments of function to call with.
+ * @param call_recover - specifies, which of the function should be called
+ *                       (ordinary or recovery version).
+ */
+void do_call(std::string const& function_name,
+             std::vector<uint8_t> const& args,
+             bool call_recover = false);
 
-// TODO: write & read answer from stack
+// TODO: document
+int write_answer(uint64_t answer);
+
+uint64_t read_answer();
 
 #endif //DIPLOM_CALL_H

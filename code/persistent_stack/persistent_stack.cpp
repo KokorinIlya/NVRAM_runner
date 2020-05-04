@@ -46,7 +46,8 @@ persistent_stack::persistent_stack(std::string stack_file_name, bool open_existi
     }
     else
     {
-        if ((fd = open(file_name.c_str(), O_RDWR, 0666)) < 0)
+        fd = open(file_name.c_str(), O_RDWR, 0666);
+        if (fd < 0)
         {
             throw std::runtime_error("Error while opening file " + file_name);
         }
@@ -66,8 +67,7 @@ persistent_stack::persistent_stack(std::string stack_file_name, bool open_existi
         }
         else
         {
-            std::string error_text(
-                    "Error while trying to mmap file " + file_name);
+            std::string error_text("Error while trying to mmap file " + file_name);
             throw std::runtime_error(error_text);
         }
     }

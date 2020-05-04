@@ -62,7 +62,8 @@ struct persistent_stack
     /**
      * munmap(2)-s file, in which persistent stack is stored,
      * and closes the file. If some error occurs while trying
-     * to close file/munmap, it is logged.
+     * to close file/munmap, it is logged, but no error is thrown
+     * (because error in destructor can lead to std::abort).
      * If persistent stack doesn't own any file (for example, it was just
      * used as an argument for move constructor), does nothing.
      */

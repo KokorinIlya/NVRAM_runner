@@ -6,8 +6,6 @@
 #include "cstring"
 #include <utility>
 #include "../common/pmem_utils.h"
-#include "../globals/thread_local_non_owning_storage.h"
-#include "../globals/thread_local_owning_storage.h"
 #include "../globals/function_address_holder.h"
 
 std::pair<stack_frame, bool> read_frame(const uint8_t* frame_mem)
@@ -143,17 +141,66 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
     pmem_do_flush(stack_mem + offset - 1, 1);
 }
 
-void do_call(const std::string& function_name, const std::vector<uint8_t>& args)
+// TODO: allow call_recover = true only if system is in recovery mode
+void do_call(const std::string& function_name, const std::vector<uint8_t>& args, bool call_recover)
 {
     add_new_frame(
             thread_local_owning_storage<ram_stack>::get_object(),
             stack_frame{function_name, args},
             *thread_local_non_owning_storage<persistent_stack>::ptr
     );
-    function_ptr f_ptr = function_address_holder::functions[function_name].first;
+    function_ptr f_ptr;
+    if (call_recover)
+    {
+        f_ptr = function_address_holder::functions[function_name].second;
+    }
+    else
+    {
+        f_ptr = function_address_holder::functions[function_name].first;
+    }
     f_ptr(args.data());
     remove_frame(
             thread_local_owning_storage<ram_stack>::get_object(),
             *thread_local_non_owning_storage<persistent_stack>::ptr
     );
+}
+
+// TODO: test
+int write_answer(uint64_t answer)
+{
+    ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
+    persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
+    if (r_stack.size() == 1)
+    {
+        return -1;
+    }
+    const uint64_t last_frame_offset = r_stack.top().position;
+    /*
+     * 8 bytes of answer + 1 byte of end marker
+     */
+    const uint64_t answer_offset = last_frame_offset - 9;
+    std::memcpy(p_stack->get_stack_ptr() + answer_offset, &answer, 8);
+    pmem_do_flush(p_stack->get_stack_ptr() + answer_offset, 8);
+    return 0;
+}
+
+uint64_t read_answer()
+{
+    ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
+    persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
+    const uint64_t last_frame_offset = r_stack.top().position;
+    /*
+     * Skip
+     * 8 bytes of function name len
+     * function_name_len bytes of function name
+     * 8 bytes of args len
+     * args_len bytes of args
+     * to retrieve beginning of answer
+     */
+    const uint64_t answer_offset = last_frame_offset + 16 +
+                                   r_stack.top().frame.args.size() +
+                                   r_stack.top().frame.function_name.size();
+    uint64_t answer;
+    std::memcpy(&answer, p_stack->get_stack_ptr() + answer_offset, 8);
+    return answer;
 }
