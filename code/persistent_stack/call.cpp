@@ -166,26 +166,33 @@ void do_call(const std::string& function_name, const std::vector<uint8_t>& args,
 }
 
 // TODO: test
-int write_answer(uint64_t answer)
+void write_answer(std::vector<uint8_t> answer)
 {
+    if (answer.empty() || answer.size() > 8)
+    {
+        throw std::runtime_error("Cannot write answer of size " + std::to_string(answer.size()));
+    }
     ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
     persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
     if (r_stack.size() == 1)
     {
-        return -1;
+        throw std::runtime_error("Cannot return value from the first frame");
     }
     const uint64_t last_frame_offset = r_stack.top().position;
     /*
      * 8 bytes of answer + 1 byte of end marker
      */
     const uint64_t answer_offset = last_frame_offset - 9;
-    std::memcpy(p_stack->get_stack_ptr() + answer_offset, &answer, 8);
-    pmem_do_flush(p_stack->get_stack_ptr() + answer_offset, 8);
-    return 0;
+    std::memcpy(p_stack->get_stack_ptr() + answer_offset, answer.data(), answer.size());
+    pmem_do_flush(p_stack->get_stack_ptr() + answer_offset, answer.size());
 }
 
-uint64_t read_answer()
+std::vector<uint8_t> read_answer(uint8_t size)
 {
+    if (size < 1 || size > 8)
+    {
+        throw std::runtime_error("Cannot read answer of size " + std::to_string(size));
+    }
     ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
     persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
     const uint64_t last_frame_offset = r_stack.top().position;
@@ -200,7 +207,29 @@ uint64_t read_answer()
     const uint64_t answer_offset = last_frame_offset + 16 +
                                    r_stack.top().frame.args.size() +
                                    r_stack.top().frame.function_name.size();
-    uint64_t answer;
-    std::memcpy(&answer, p_stack->get_stack_ptr() + answer_offset, 8);
+    std::vector<uint8_t> answer(size);
+    std::memcpy(answer.data(), p_stack->get_stack_ptr() + answer_offset, size);
+    return answer;
+}
+
+std::vector<uint8_t> read_current_answer(uint8_t size)
+{
+    if (size < 1 || size > 8)
+    {
+        throw std::runtime_error("Cannot read answer of size " + std::to_string(size));
+    }
+    ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
+    persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
+    if (r_stack.size() == 1)
+    {
+        throw std::runtime_error("Cannot return value from the first frame");
+    }
+    const uint64_t last_frame_offset = r_stack.top().position;
+    /*
+     * 8 bytes of answer + 1 byte of end marker
+     */
+    const uint64_t answer_offset = last_frame_offset - 9;
+    std::vector<uint8_t> answer(size);
+    std::memcpy(answer.data(), p_stack->get_stack_ptr() + answer_offset, size);
     return answer;
 }

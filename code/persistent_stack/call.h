@@ -11,6 +11,7 @@
 #include "ram_stack.h"
 #include "../globals/thread_local_non_owning_storage.h"
 #include "../globals/thread_local_owning_storage.h"
+#include <vector>
 
 /**
  * Reads stack from persistent emory to RAM. This function can be used
@@ -33,7 +34,7 @@ ram_stack read_stack(const persistent_stack& persistent_stack);
 void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack& persistent_stack);
 
 /**
- * Adds single frame from the top of the stack. Frame is removed from both
+ * Removes single frame from the top of the stack. Frame is removed from both
  * persistent and RAM stack.
  * @param stack - stack, that is stored in RAM. Should be representation
  * (i.e. contain the same data) as persistent stack.
@@ -68,9 +69,45 @@ void do_call(std::string const& function_name,
              std::vector<uint8_t> const& args,
              bool call_recover = false);
 
-// TODO: document
-int write_answer(uint64_t answer);
+/**
+ * Write answer of the function to persistent memory. Answer can be of any size between 1 and 8 bytes.
+ * Answer is flushed to persistent memory from cache before the function returns.
+ * Answer is written to the previous stack frame (8 bytes just before end marker).
+ * If there is no previous frame (i.e. frame, corresponding to the function, that is now being executed,
+ * is the only frame in the stack) answer couldn't be written and function throws std::runtime_error.
+ * Also, if the answer is bigger than 8 bytes or less than 1 byte, std::runtime_error is also thrown.
+ * Otherwise (if answer has been written successfully) function returns normally.
+ * Note, that on non-NVRAM systems (for example, on systems, on which HDD is used as persistent storage)
+ * write of more than 1 byte can be non-atomic operation and system can crash when only part of the answer
+ * has been flushed to persistent memory, while the rest of the answer hasn't been flushed yet.
+ * Function has to deal with this situation itself.
+ * For example, in the beginning of the function we can write some default value to all of the bytes
+ * of the answer, then in recovery mode read current function answer using read_current_answer
+ * and then check, which of 3 situations happened:
+ * <ul>
+ *  <li>
+ *      All bytes of answer contain default values - it means, that answer hasn't been flushed to
+ *      persistent memory.
+ *  </li>
+ *  <li>
+ *      No bytes of answer contain default values - it means, that answer has been fully flushed
+ *      to persistent memory.
+ *  </li>
+ *  <li>
+ *      Some of bytes of answer (but not all bytes) contain default value - it means, that
+ *      only part of answer was flushed to persistent memory. Answer should be rewritten
+ *      to persistent memory.
+ *  </li>
+ * </ul>
+ * @param answer - answer to save in persistent memory.
+ * @throws std::runtime_error - if answer size not between 1 and 8 inclusively or current frame is the
+ *                              only frame in the stack.
+ */
+void write_answer(std::vector<uint8_t> answer);
 
-uint64_t read_answer();
+// TODO: document
+std::vector<uint8_t> read_current_answer(uint8_t size);
+
+std::vector<uint8_t> read_answer(uint8_t size);
 
 #endif //DIPLOM_CALL_H
