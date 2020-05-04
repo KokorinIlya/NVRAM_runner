@@ -1,7 +1,3 @@
-//
-// Created by ilya on 30.04.2020.
-//
-
 #ifndef DIPLOM_THREAD_LOCAL_OWNING_STORAGE_H
 #define DIPLOM_THREAD_LOCAL_OWNING_STORAGE_H
 

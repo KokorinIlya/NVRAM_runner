@@ -1,7 +1,3 @@
-//
-// Created by ilya on 03.05.2020.
-//
-
 #include "test_utils.h"
 #include <filesystem>
 

@@ -1,15 +1,9 @@
-//
-// Created by ilya on 04.05.2020.
-//
-
 #include "gtest/gtest.h"
 #include <thread>
 #include "../code/persistent_stack/persistent_stack.h"
 #include "../code/persistent_stack/ram_stack.h"
 #include "../code/persistent_stack/call.h"
 #include "test_utils.h"
-#include "../code/globals/thread_local_owning_storage.h"
-#include "../code/globals/thread_local_non_owning_storage.h"
 
 TEST(persistent_stack_multithreading, add)
 {

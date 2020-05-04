@@ -1,7 +1,3 @@
-//
-// Created by ilya on 24.04.2020.
-//
-
 #ifndef DIPLOM_RAM_STACK_H
 #define DIPLOM_RAM_STACK_H
 

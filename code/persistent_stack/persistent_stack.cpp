@@ -1,17 +1,12 @@
-//
-// Created by ilya on 29.04.2020.
-//
-
 #include "persistent_stack.h"
 #include <fcntl.h>
 #include <stdexcept>
-#include <unistd.h>
 #include <sys/mman.h>
 #include "../common/constants_and_types.h"
 #include <iostream>
 #include <utility>
 #include <cstdio>
-
+#include "../common/constants_and_types.h"
 
 persistent_stack::persistent_stack(std::string stack_file_name, bool open_existing)
         : fd(-1),
@@ -53,8 +48,8 @@ persistent_stack::persistent_stack(std::string stack_file_name, bool open_existi
         }
     }
 
-    void* pmemaddr =mmap(nullptr, PMEM_STACK_SIZE,
-                    PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    void* pmemaddr = mmap(nullptr, PMEM_STACK_SIZE,
+                          PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (pmemaddr == nullptr)
     {
@@ -72,6 +67,12 @@ persistent_stack::persistent_stack(std::string stack_file_name, bool open_existi
         }
     }
     stack_ptr = static_cast<uint8_t*>(pmemaddr);
+    if ((uint64_t) pmemaddr % PAGE_SIZE != 0)
+    {
+        std::string err_msg = "Return value of mmap = " + std::to_string((uint64_t) pmemaddr) +
+                              "but page size = " + std::to_string(PAGE_SIZE);
+        std::cerr << err_msg << std::endl;
+    }
 }
 
 persistent_stack::~persistent_stack()

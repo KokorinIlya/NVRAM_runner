@@ -1,7 +1,3 @@
-//
-// Created by ilya on 03.05.2020.
-//
-
 #include "gtest/gtest.h"
 #include "../code/globals/thread_local_owning_storage.h"
 #include <functional>

@@ -1,7 +1,3 @@
-//
-// Created by ilya on 29.04.2020.
-//
-
 #ifndef DIPLOM_BLOCKING_QUEUE_H
 #define DIPLOM_BLOCKING_QUEUE_H
 

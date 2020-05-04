@@ -1,7 +1,3 @@
-//
-// Created by ilya on 03.05.2020.
-//
-
 #include <cstdio>
 #include "../code/persistent_stack/persistent_stack.h"
 #include "../code/persistent_stack/ram_stack.h"

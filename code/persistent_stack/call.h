@@ -1,7 +1,3 @@
-//
-// Created by ilya on 29.04.2020.
-//
-
 #ifndef DIPLOM_CALL_H
 #define DIPLOM_CALL_H
 
@@ -105,9 +101,38 @@ void do_call(std::string const& function_name,
  */
 void write_answer(std::vector<uint8_t> answer);
 
-// TODO: document
+/**
+ * Reads size bytes of answer, that was written by function, that is currently being executed.
+ * Can be used to discover, if crash event occurred before or after all the answer was written to
+ * persistent memory (method of discovering is described above). Since function writes answer to
+ * the previous stack frame, read_current_answer reads answer from previous stack frame.
+ * Therefore, if stack frame, corresponding to the function, that is currently being executed,
+ * is the only frame in the stack, std::runtime_error will be thrown (note, that in such case answer also
+ * cannot be written). Also, std::runtime_error is thrown if size is not between 1 and 8 inclusively.
+ * @param size - size of answer to retrieve in bytes.
+ * @return size bytes of answer.
+ * @throws std::runtime_error - if answer size not between 1 and 8 inclusively or current frame is the
+ *                              only frame in the stack.
+ */
 std::vector<uint8_t> read_current_answer(uint8_t size);
 
+/**
+ * Reads answer from current stack frame. Since function writes it's answer to the previous stack frame,
+ * read_answer retrieves return value of a function, that has just returned.
+ * For example, consider the following code:
+ *
+ * def f():
+ *      g()
+ *      read_answer(8) - reads answer of g
+ *      h()
+ *      read_answer(8) - reads answer of h
+ *
+ * This function can read from 1 up to 8 bytes. If previously returned function has written N bytes of answer,
+ * then only N bytes can be retrieved correctly, N+1-th byte can contain any uninitialized data.
+ * @param size - size of answer to retrieve in bytes.
+ * @return size bytes of answer.
+ * @throws std::runtime_error if size not between 1 and 8 inclusively.
+ */
 std::vector<uint8_t> read_answer(uint8_t size);
 
 #endif //DIPLOM_CALL_H

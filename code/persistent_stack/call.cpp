@@ -1,7 +1,3 @@
-//
-// Created by ilya on 29.04.2020.
-//
-
 #include "call.h"
 #include "cstring"
 #include <utility>
@@ -111,6 +107,7 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
     cur_offset += args_len;
 
     /*
+     * TODO: align by cache line
      * Skip 8 bytes for answer, do not write anything
      */
     cur_offset += 8;
@@ -142,6 +139,7 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
 }
 
 // TODO: allow call_recover = true only if system is in recovery mode
+// TODO: add global_holder<T> and write function_address_holder using it
 void do_call(const std::string& function_name, const std::vector<uint8_t>& args, bool call_recover)
 {
     add_new_frame(

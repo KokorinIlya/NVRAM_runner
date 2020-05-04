@@ -1,7 +1,3 @@
-//
-// Created by ilya on 29.04.2020.
-//
-
 #ifndef DIPLOM_PERSISTENT_STACK_H
 #define DIPLOM_PERSISTENT_STACK_H
 

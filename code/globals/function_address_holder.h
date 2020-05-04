@@ -1,7 +1,3 @@
-//
-// Created by ilya on 28.04.2020.
-//
-
 #ifndef DIPLOM_FUNCTION_ADDRESS_HOLDER_H
 #define DIPLOM_FUNCTION_ADDRESS_HOLDER_H
 

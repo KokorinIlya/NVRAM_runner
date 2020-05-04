@@ -1,7 +1,3 @@
-//
-// Created by ilya on 24.04.2020.
-//
-
 #include "ram_stack.h"
 
 uint64_t get_frame_size(const stack_frame& frame)

@@ -1,7 +1,3 @@
-//
-// Created by ilya on 03.05.2020.
-//
-
 #include "gtest/gtest.h"
 #include <thread>
 #include "../code/blocking_queue/blocking_queue.h"

@@ -1,7 +1,3 @@
-//
-// Created by ilya on 03.05.2020.
-//
-
 #include "../code/globals/function_address_holder.h"
 #include "gtest/gtest.h"
 #include <utility>

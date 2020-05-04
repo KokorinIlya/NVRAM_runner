@@ -1,7 +1,3 @@
-//
-// Created by ilya on 29.04.2020.
-//
-
 #include "pmem_utils.h"
 #include <libpmem.h>
 
