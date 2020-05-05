@@ -1,5 +1,6 @@
 #include "test_utils.h"
 #include <filesystem>
+#include <cstdio>
 
 std::string get_temp_file_name(std::string const& path_prefix)
 {
@@ -14,4 +15,12 @@ std::string get_temp_file_name(std::string const& path_prefix)
         return cur_name;
     }
 
+}
+
+temp_file::temp_file(std::string name) : file_name(std::move(name))
+{}
+
+temp_file::~temp_file()
+{
+    remove(file_name.c_str());
 }

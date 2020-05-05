@@ -129,6 +129,10 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
 
 void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
 {
+    if (stack.size() == 1)
+    {
+        throw std::runtime_error("Cannot remove first frame of the stack");
+    }
     uint8_t* const stack_mem = persistent_stack.get_stack_ptr();
     const positioned_frame last_frame = stack.top();
     stack.pop();

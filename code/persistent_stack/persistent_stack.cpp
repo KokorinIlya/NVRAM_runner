@@ -6,7 +6,6 @@
 #include <iostream>
 #include <utility>
 #include <cstdio>
-#include "../common/constants_and_types.h"
 
 persistent_stack::persistent_stack(std::string stack_file_name, bool open_existing)
         : fd(-1),

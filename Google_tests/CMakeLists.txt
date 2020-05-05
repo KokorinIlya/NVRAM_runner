@@ -18,6 +18,7 @@ add_executable(
         persistent_stack_multithreading_test.cpp
         call_test.cpp
         call_multithreading_test.cpp
+        answer_test.cpp
         ../code/persistent_stack/ram_stack.cpp
         ../code/globals/function_address_holder.cpp
         ../code/persistent_stack/persistent_stack.cpp

@@ -31,10 +31,15 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
 
 /**
  * Removes single frame from the top of the stack. Frame is removed from both
- * persistent and RAM stack.
+ * persistent and RAM stack. Note, that since removing stack frame from persistent stack
+ * is just writing stack end marker to the penultimate stack frame, first frame of the stack
+ * CANNOT be removed. std::runtime_error will be thrown, if the frame, that should be removed,
+ * is the only frame in the stack.
  * @param stack - stack, that is stored in RAM. Should be representation
  * (i.e. contain the same data) as persistent stack.
  * @param persistent_stack - stack, that is stored in file.
+ * @throws std::runtime_error if the frame, that should be removed, is the only frame
+ *                            in the stack.
  */
 void remove_frame(ram_stack& stack, persistent_stack& persistent_stack);
 
@@ -55,6 +60,11 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack);
  * </ul>
  * If call_recover is false (usually), calls ordinary version of the function. Otherwise,
  * calls recovery version.
+ * Since first frame of the stack cannot be removed, main function of the thread should
+ * NEVER return a value. Main function of each thread should wait in an infinity cycle and
+ * finish it's execution only by exception or system crash. Since, according to the
+ * system architecture, each worker system thread should get and execute tasks from
+ * tasks queue in an infinite loop, this limitation shouldn't be considered a drawback.
  * @param function_name - name of the function to call. Must be a valid key of the map with
  *                        addresses of the function.
  * @param args - arguments of function to call with.
