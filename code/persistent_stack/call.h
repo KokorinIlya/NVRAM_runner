@@ -35,7 +35,11 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
  * persistent and RAM stack. Note, that since removing stack frame from persistent stack
  * is just writing stack end marker to the penultimate stack frame, first frame of the stack
  * CANNOT be removed. std::runtime_error will be thrown, if the frame, that should be removed,
- * is the only frame in the stack.
+ * is the only frame in the stack. Because of this, main function of each thread should
+ * NEVER return a value. Main function of each thread should wait in an infinite loop and
+ * finish it's execution only by exception or system crash. But, since according to the
+ * system architecture, each worker thread should take and execute tasks from
+ * tasks queue in an infinite loop, this limitation shouldn't be considered a drawback.
  * @param stack - stack, that is stored in RAM. Should be representation
  * (i.e. contain the same data) as persistent stack.
  * @param persistent_stack - stack, that is stored in file.
@@ -66,9 +70,9 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack);
  * 1 and 8 bytes inclusively, std::runtime_error will be thrown. This parameter can be used to
  * write some default value (that cannot be return value of the function) to a place, where
  * it's answer will be written.
- * Since first frame of the stack cannot be removed, main function of the thread should
- * NEVER return a value. Main function of each thread should wait in an infinity cycle and
- * finish it's execution only by exception or system crash. Since, according to the
+ * Since first frame of the stack cannot be removed, main function of each thread should
+ * NEVER return a value. Main function of each thread should wait in an infinite loop and
+ * finish it's execution only by exception or system crash. But, since according to the
  * system architecture, each worker thread should take and execute tasks from
  * tasks queue in an infinite loop, this limitation shouldn't be considered a drawback.
  * @param function_name - name of the function to call. Must be a valid key of the map with
