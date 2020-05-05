@@ -14,13 +14,21 @@ std::string get_temp_file_name(std::string const& path_prefix)
         }
         return cur_name;
     }
-
 }
 
-temp_file::temp_file(std::string name) : file_name(std::move(name))
+temp_file::temp_file(std::string name) : file_name(std::move(name)), valid(true)
 {}
 
 temp_file::~temp_file()
 {
-    remove(file_name.c_str());
+    if (valid && remove(file_name.c_str()) != 0)
+    {
+        perror("remove file");
+    }
+}
+
+temp_file::temp_file(temp_file&& other) noexcept:
+        file_name(std::move(other.file_name)), valid(true)
+{
+    other.valid = false;
 }

@@ -143,19 +143,20 @@ TEST(persistent_stack_multithreading, add)
 TEST(persistent_stack_multithreading, add_and_remove)
 {
     uint32_t number_of_threads = 4;
-    std::vector<std::string> file_names;
+    std::vector<temp_file> temp_files;
     for (uint32_t i = 0; i < number_of_threads; ++i)
     {
-        const std::string file_name = get_temp_file_name("stack-" + std::to_string(i));
-        file_names.push_back(file_name);
+        temp_files.emplace_back(
+                get_temp_file_name("stack-" + std::to_string(i))
+        );
     }
 
-    std::function<void()> normal_work = [number_of_threads, &file_names]()
+    std::function<void()> normal_work = [number_of_threads, &temp_files]()
     {
         std::vector<persistent_stack> stacks;
         for (uint32_t i = 0; i < number_of_threads; ++i)
         {
-            stacks.emplace_back(file_names[i], false);
+            stacks.emplace_back(temp_files[i].file_name, false);
         }
         std::vector<std::thread> threads;
         for (uint32_t i = 0; i < number_of_threads; ++i)
@@ -211,12 +212,12 @@ TEST(persistent_stack_multithreading, add_and_remove)
     };
     normal_work();
 
-    std::function<void()> restoration = [number_of_threads, &file_names]()
+    std::function<void()> restoration = [number_of_threads, &temp_files]()
     {
         std::vector<persistent_stack> stacks;
         for (uint32_t i = 0; i < number_of_threads; ++i)
         {
-            stacks.emplace_back(file_names[i], true);
+            stacks.emplace_back(temp_files[i].file_name, true);
         }
         std::vector<std::thread> threads;
         std::vector<bool> t_correct({false, false, false, false});
@@ -260,8 +261,4 @@ TEST(persistent_stack_multithreading, add_and_remove)
         }
     };
     restoration();
-    for (std::string const& cur_file_name: file_names)
-    {
-        remove(cur_file_name.c_str());
-    }
 }

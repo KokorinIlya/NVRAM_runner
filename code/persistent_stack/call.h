@@ -84,9 +84,9 @@ void do_call(std::string const& function_name,
  * Also, if the answer is bigger than 8 bytes or less than 1 byte, std::runtime_error is also thrown.
  * Otherwise (if answer has been written successfully) function returns normally.
  * Note, that on non-NVRAM systems (for example, on systems, on which HDD is used as persistent storage)
- * write of more than 1 byte can be non-atomic operation and system can crash when only part of the answer
- * has been flushed to persistent memory, while the rest of the answer hasn't been flushed yet.
- * Function has to deal with this situation itself.
+ * write of more than 1 byte can be non-atomic operation and system can crash when only part of
+ * the answer has been flushed to persistent memory, while the rest of the answer hasn't been
+ * flushed yet. Function has to deal with this situation itself.
  * For example, in the beginning of the function we can write some default value to all of the bytes
  * of the answer, then in recovery mode read current function answer using read_current_answer
  * and then check, which of 3 situations happened:
@@ -117,12 +117,13 @@ void write_answer(std::vector<uint8_t> answer);
  * persistent memory (method of discovering is described above). Since function writes answer to
  * the previous stack frame, read_current_answer reads answer from previous stack frame.
  * Therefore, if stack frame, corresponding to the function, that is currently being executed,
- * is the only frame in the stack, std::runtime_error will be thrown (note, that in such case answer also
- * cannot be written). Also, std::runtime_error is thrown if size is not between 1 and 8 inclusively.
+ * is the only frame in the stack, std::runtime_error will be thrown (note, that in such case answer
+ * also cannot be written). Also, std::runtime_error is thrown if size is not between
+ * 1 and 8 inclusively.
  * @param size - size of answer to retrieve in bytes.
  * @return size bytes of answer.
- * @throws std::runtime_error - if answer size not between 1 and 8 inclusively or current frame is the
- *                              only frame in the stack.
+ * @throws std::runtime_error - if answer size not between 1 and 8 inclusively or current frame
+ *                              is the only frame in the stack.
  */
 std::vector<uint8_t> read_current_answer(uint8_t size);
 
@@ -137,8 +138,9 @@ std::vector<uint8_t> read_current_answer(uint8_t size);
  *      h()
  *      read_answer(8) - reads answer of h
  *
- * This function can read from 1 up to 8 bytes. If previously returned function has written N bytes of answer,
- * then only N bytes can be retrieved correctly, N+1-th byte can contain any uninitialized data.
+ * This function can read from 1 up to 8 bytes. If previously returned function has written
+ * N bytes of answer, then only N bytes can be retrieved correctly, N+1-th byte can contain
+ * any uninitialized data.
  * @param size - size of answer to retrieve in bytes.
  * @return size bytes of answer.
  * @throws std::runtime_error if size not between 1 and 8 inclusively.

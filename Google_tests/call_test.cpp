@@ -26,14 +26,14 @@ namespace
 
 TEST(call, restoration_after_crash)
 {
-    std::string file_name = get_temp_file_name("stack");
-    std::function<void()> execution = [&file_name]()
+    temp_file file(get_temp_file_name("stack"));
+    std::function<void()> execution = [&file]()
     {
         function_address_holder::functions.clear();
         function_address_holder::functions["f"] = std::make_pair(f, f);
         function_address_holder::functions["g"] = std::make_pair(g, g);
         function_address_holder::functions["h"] = std::make_pair(h, h);
-        persistent_stack p_stack(file_name, false);
+        persistent_stack p_stack(file.file_name, false);
         thread_local_non_owning_storage<persistent_stack>::ptr = &p_stack;
         thread_local_owning_storage<ram_stack>::set_object(ram_stack());
         do_call("f", std::vector<uint8_t>({1, 2, 3}));
@@ -47,9 +47,9 @@ TEST(call, restoration_after_crash)
     }
 
 
-    std::function<void()> restoration = [&file_name]()
+    std::function<void()> restoration = [&file]()
     {
-        persistent_stack p_stack(file_name, true);
+        persistent_stack p_stack(file.file_name, true);
         thread_local_non_owning_storage<persistent_stack>::ptr = &p_stack;
         ram_stack r_stack = read_stack(p_stack);
         thread_local_owning_storage<ram_stack>::set_object(r_stack);
@@ -66,6 +66,4 @@ TEST(call, restoration_after_crash)
         EXPECT_EQ(f_frame.args, std::vector<uint8_t>({1, 2, 3}));
     };
     restoration();
-
-    remove(file_name.c_str());
 }

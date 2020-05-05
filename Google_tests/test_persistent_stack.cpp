@@ -7,9 +7,9 @@
 
 TEST(persistent_stack, add_frame)
 {
-    std::string temp_file_name = get_temp_file_name("stack");
+    temp_file file(get_temp_file_name("stack"));
 
-    persistent_stack p_stack(temp_file_name, false);
+    persistent_stack p_stack(file.file_name, false);
     ram_stack r_stack;
     stack_frame frame_1 = stack_frame
             {
@@ -23,18 +23,13 @@ TEST(persistent_stack, add_frame)
     stack_frame top_frame = another_r_stack.top().frame;
     EXPECT_EQ(top_frame.function_name, "some_function_name");
     EXPECT_EQ(top_frame.args, std::vector<uint8_t>({1, 3, 3, 7}));
-
-    if (remove(temp_file_name.c_str()) != 0)
-    {
-        perror("Close file");
-    }
 }
 
 TEST(persistent_stack, add_multiple_frames)
 {
-    std::string temp_file_name = get_temp_file_name("stack");
+    temp_file file(get_temp_file_name("stack"));
 
-    persistent_stack p_stack(temp_file_name, false);
+    persistent_stack p_stack(file.file_name, false);
     ram_stack r_stack;
     stack_frame frame_1 = stack_frame
             {
@@ -72,18 +67,13 @@ TEST(persistent_stack, add_multiple_frames)
     another_r_stack.pop();
     EXPECT_EQ(another_frame_1.function_name, "some_function_name");
     EXPECT_EQ(another_frame_1.args, std::vector<uint8_t>({1, 3, 3, 7}));
-
-    if (remove(temp_file_name.c_str()) != 0)
-    {
-        perror("Close file");
-    }
 }
 
 TEST(persistent_stack, add_multiple_frames_remove_single_frame)
 {
-    std::string temp_file_name = get_temp_file_name("stack");
+    temp_file file(get_temp_file_name("stack"));
 
-    persistent_stack p_stack(temp_file_name, false);
+    persistent_stack p_stack(file.file_name, false);
     ram_stack r_stack;
     stack_frame frame_1 = stack_frame
             {
@@ -117,18 +107,13 @@ TEST(persistent_stack, add_multiple_frames_remove_single_frame)
     another_r_stack.pop();
     EXPECT_EQ(another_frame_1.function_name, "some_function_name");
     EXPECT_EQ(another_frame_1.args, std::vector<uint8_t>({1, 3, 3, 7}));
-
-    if (remove(temp_file_name.c_str()) != 0)
-    {
-        perror("Close file");
-    }
 }
 
 TEST(persistent_stack, add_and_remove_multiple_frames)
 {
-    std::string temp_file_name = get_temp_file_name("stack");
+    temp_file file(get_temp_file_name("stack"));
 
-    persistent_stack p_stack(temp_file_name, false);
+    persistent_stack p_stack(file.file_name, false);
     ram_stack r_stack;
     stack_frame frame_1 = stack_frame
             {
@@ -158,10 +143,5 @@ TEST(persistent_stack, add_and_remove_multiple_frames)
     another_r_stack.pop();
     EXPECT_EQ(another_frame_1.function_name, "some_function_name");
     EXPECT_EQ(another_frame_1.args, std::vector<uint8_t>({1, 3, 3, 7}));
-
-    if (remove(temp_file_name.c_str()) != 0)
-    {
-        perror("Close file");
-    }
 }
 
