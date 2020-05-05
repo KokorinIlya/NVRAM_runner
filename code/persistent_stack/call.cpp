@@ -145,7 +145,6 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
 }
 
 // TODO: allow call_recover = true only if system is in recovery mode
-// TODO: test ans_filler
 void do_call(const std::string& function_name,
              const std::vector<uint8_t>& args,
              std::optional<std::vector<uint8_t>> const& ans_filler,
@@ -194,7 +193,6 @@ void do_call(const std::string& function_name,
     remove_frame(r_stack,*p_stack);
 }
 
-// TODO: test concurrent
 void write_answer(std::vector<uint8_t> const& answer)
 {
     if (answer.empty() || answer.size() > 8)

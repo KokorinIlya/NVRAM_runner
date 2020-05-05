@@ -22,5 +22,6 @@ add_executable(
         persistent_stack/call_multithreading_test.cpp
         persistent_stack/answer_test.cpp
         storage/global_storage_test.cpp
+        persistent_stack/answer_multithreading_test.cpp
 )
 target_link_libraries(Google_Tests_run pmem gtest gtest_main)
