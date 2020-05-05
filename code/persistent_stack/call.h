@@ -8,6 +8,7 @@
 #include "../storage/thread_local_non_owning_storage.h"
 #include "../storage/thread_local_owning_storage.h"
 #include <vector>
+#include <optional>
 
 /**
  * Reads stack from persistent emory to RAM. This function can be used
@@ -60,19 +61,30 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack);
  * </ul>
  * If call_recover is false (usually), calls ordinary version of the function. Otherwise,
  * calls recovery version.
+ * Can write ans_filler to a memory, where function, that is being called, will write it's answer.
+ * This memory is located in the current stack frame. If ans_filler size is not between
+ * 1 and 8 bytes inclusively, std::runtime_error will be thrown. This parameter can be used to
+ * write some default value (that cannot be return value of the function) to a place, where
+ * it's answer will be written.
  * Since first frame of the stack cannot be removed, main function of the thread should
  * NEVER return a value. Main function of each thread should wait in an infinity cycle and
  * finish it's execution only by exception or system crash. Since, according to the
- * system architecture, each worker system thread should get and execute tasks from
+ * system architecture, each worker thread should take and execute tasks from
  * tasks queue in an infinite loop, this limitation shouldn't be considered a drawback.
  * @param function_name - name of the function to call. Must be a valid key of the map with
  *                        addresses of the function.
  * @param args - arguments of function to call with.
+ * @param ans_filler - if option contains value, it's value will be written to an answer memory
+ *                     of current stack frame. Otherwise, won't be used.
+ * @param call_recover - if true, recover version of function will be called. Otherwise, ordinary
+ *                       version will be called.
  * @param call_recover - specifies, which of the function should be called
  *                       (ordinary or recovery version).
+ * @throws std::runtime_error - if ans_filler size is not between 1 and 8 bytes inclusively.
  */
 void do_call(std::string const& function_name,
              std::vector<uint8_t> const& args,
+             std::optional<std::vector<uint8_t>> const& ans_filler = std::optional<std::vector<uint8_t>>(),
              bool call_recover = false);
 
 /**
@@ -109,7 +121,7 @@ void do_call(std::string const& function_name,
  * @throws std::runtime_error - if answer size not between 1 and 8 inclusively or current frame is the
  *                              only frame in the stack.
  */
-void write_answer(std::vector<uint8_t> answer);
+void write_answer(std::vector<uint8_t> const& answer);
 
 /**
  * Reads size bytes of answer, that was written by function, that is currently being executed.

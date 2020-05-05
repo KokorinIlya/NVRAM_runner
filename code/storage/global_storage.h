@@ -5,7 +5,6 @@
 #include <stdexcept>
 
 /**
- * TODO: test
  * Stores instances of some object of type T as global singleton object.
  * For all program threads, only one instance of T is stored, but instances of this class
  * for different types (for example, global_storage<int> and global_storage<string>)

@@ -145,13 +145,40 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
 }
 
 // TODO: allow call_recover = true only if system is in recovery mode
-void do_call(const std::string& function_name, const std::vector<uint8_t>& args, bool call_recover)
+// TODO: test ans_filler
+void do_call(const std::string& function_name,
+             const std::vector<uint8_t>& args,
+             std::optional<std::vector<uint8_t>> const& ans_filler,
+             bool call_recover)
 {
-    add_new_frame(
-            thread_local_owning_storage<ram_stack>::get_object(),
-            stack_frame{function_name, args},
-            *thread_local_non_owning_storage<persistent_stack>::ptr
-    );
+    ram_stack& r_stack = thread_local_owning_storage<ram_stack>::get_object();
+    persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
+    if (ans_filler.has_value())
+    {
+        if (ans_filler->empty() || ans_filler->size() > 8)
+        {
+            throw std::runtime_error("Cannot write answer of size " +
+                                     std::to_string(ans_filler->size()));
+        }
+        const uint64_t last_frame_offset = r_stack.top().position;
+        /*
+         * Skip
+         * 8 bytes of function name len
+         * function_name_len bytes of function name
+         * 8 bytes of args len
+         * args_len bytes of args
+         * to retrieve beginning of answer
+         */
+        const uint64_t answer_offset = last_frame_offset + 16 +
+                                       r_stack.top().frame.args.size() +
+                                       r_stack.top().frame.function_name.size();
+        std::memcpy(
+                p_stack->get_stack_ptr() + answer_offset,
+                ans_filler->data(),
+                ans_filler->size()
+        );
+    }
+    add_new_frame(r_stack,stack_frame{function_name, args},*p_stack);
     function_ptr f_ptr;
     if (call_recover)
     {
@@ -164,14 +191,11 @@ void do_call(const std::string& function_name, const std::vector<uint8_t>& args,
                 .funcs.at(function_name).first;
     }
     f_ptr(args.data());
-    remove_frame(
-            thread_local_owning_storage<ram_stack>::get_object(),
-            *thread_local_non_owning_storage<persistent_stack>::ptr
-    );
+    remove_frame(r_stack,*p_stack);
 }
 
-// TODO: test
-void write_answer(std::vector<uint8_t> answer)
+// TODO: test concurrent
+void write_answer(std::vector<uint8_t> const& answer)
 {
     if (answer.empty() || answer.size() > 8)
     {
