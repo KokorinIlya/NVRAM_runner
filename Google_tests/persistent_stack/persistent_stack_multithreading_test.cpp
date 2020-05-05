@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 #include <thread>
-#include "../code/persistent_stack/persistent_stack.h"
-#include "../code/persistent_stack/ram_stack.h"
-#include "../code/persistent_stack/call.h"
-#include "test_utils.h"
+#include "../../code/persistent_stack/persistent_stack.h"
+#include "../../code/persistent_stack/ram_stack.h"
+#include "../../code/persistent_stack/call.h"
+#include "../common/test_utils.h"
 
 TEST(persistent_stack_multithreading, add)
 {

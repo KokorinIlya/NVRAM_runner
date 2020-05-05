@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../code/globals/global_storage.h"
+#include "../../code/storage/global_storage.h"
 #include <functional>
 #include <thread>
 

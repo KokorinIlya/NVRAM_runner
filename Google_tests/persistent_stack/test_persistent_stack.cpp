@@ -1,8 +1,8 @@
-#include "../code/persistent_stack/persistent_stack.h"
-#include "../code/persistent_stack/ram_stack.h"
-#include "../code/persistent_stack/call.h"
+#include "../../code/persistent_stack/persistent_stack.h"
+#include "../../code/persistent_stack/ram_stack.h"
+#include "../../code/persistent_stack/call.h"
 #include "gtest/gtest.h"
-#include "test_utils.h"
+#include "../common/test_utils.h"
 
 TEST(persistent_stack, add_frame)
 {

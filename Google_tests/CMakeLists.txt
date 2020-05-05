@@ -12,15 +12,15 @@ add_executable(
         ../code/common/pmem_utils.cpp
         ../code/persistent_stack/call.cpp
         ../code/model/function_address_holder.cpp
-        queue_test.cpp
-        test_persistent_stack.cpp
-        test_utils.cpp
-        thread_local_non_owning_storage_test.cpp
-        thread_local_owning_storage_test.cpp
-        persistent_stack_multithreading_test.cpp
-        call_test.cpp
-        call_multithreading_test.cpp
-        answer_test.cpp
-        global_storage_test.cpp
+        blocking_queue/queue_test.cpp
+        persistent_stack/test_persistent_stack.cpp
+        common/test_utils.cpp
+        storage/thread_local_non_owning_storage_test.cpp
+        storage/thread_local_owning_storage_test.cpp
+        persistent_stack/persistent_stack_multithreading_test.cpp
+        persistent_stack/call_test.cpp
+        persistent_stack/call_multithreading_test.cpp
+        persistent_stack/answer_test.cpp
+        storage/global_storage_test.cpp
 )
 target_link_libraries(Google_Tests_run pmem gtest gtest_main)

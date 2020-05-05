@@ -1,9 +1,4 @@
 #include <iostream>
-#include "code/persistent_stack/call.h"
-#include "code/globals/thread_local_non_owning_storage.h"
-#include "code/globals/thread_local_owning_storage.h"
-#include <thread>
-#include <unistd.h>
 #include <functional>
 
 int main(int argc, char** argv)

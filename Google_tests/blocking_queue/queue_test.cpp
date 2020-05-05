@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include <thread>
-#include "../code/blocking_queue/blocking_queue.h"
+#include "../../code/blocking_queue/blocking_queue.h"
 #include <unistd.h>
 
 TEST(queue, base_correctness)

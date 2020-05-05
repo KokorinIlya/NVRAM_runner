@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../code/globals/thread_local_owning_storage.h"
+#include "../../code/storage/thread_local_owning_storage.h"
 #include <functional>
 #include <thread>
 

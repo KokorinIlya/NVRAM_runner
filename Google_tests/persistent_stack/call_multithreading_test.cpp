@@ -1,12 +1,12 @@
 #include "gtest/gtest.h"
-#include "../code/persistent_stack/persistent_stack.h"
-#include "../code/persistent_stack/ram_stack.h"
-#include "../code/persistent_stack/call.h"
-#include "../code/globals/global_storage.h"
-#include "test_utils.h"
+#include "../../code/persistent_stack/persistent_stack.h"
+#include "../../code/persistent_stack/ram_stack.h"
+#include "../../code/persistent_stack/call.h"
+#include "../../code/storage/global_storage.h"
+#include "../common/test_utils.h"
 #include <functional>
 #include <thread>
-#include "../code/model/function_address_holder.h"
+#include "../../code/model/function_address_holder.h"
 
 namespace
 {

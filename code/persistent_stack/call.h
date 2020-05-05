@@ -5,8 +5,8 @@
 #include <vector>
 #include "persistent_stack.h"
 #include "ram_stack.h"
-#include "../globals/thread_local_non_owning_storage.h"
-#include "../globals/thread_local_owning_storage.h"
+#include "../storage/thread_local_non_owning_storage.h"
+#include "../storage/thread_local_owning_storage.h"
 #include <vector>
 
 /**

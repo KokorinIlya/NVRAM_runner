@@ -2,7 +2,7 @@
 #include "cstring"
 #include <utility>
 #include "../common/pmem_utils.h"
-#include "../globals/global_storage.h"
+#include "../storage/global_storage.h"
 #include "../common/constants_and_types.h"
 #include "../model/function_address_holder.h"
 

@@ -1,4 +1,4 @@
-#include "../code/globals/thread_local_non_owning_storage.h"
+#include "../../code/storage/thread_local_non_owning_storage.h"
 #include "gtest/gtest.h"
 #include <unistd.h>
 #include "functional"
