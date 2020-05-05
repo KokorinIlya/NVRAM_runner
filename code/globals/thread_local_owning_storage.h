@@ -2,7 +2,6 @@
 #define DIPLOM_THREAD_LOCAL_OWNING_STORAGE_H
 
 #include <optional>
-#include "../persistent_stack/ram_stack.h"
 #include <stdexcept>
 
 /**

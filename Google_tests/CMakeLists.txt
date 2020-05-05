@@ -12,7 +12,6 @@ add_executable(
         queue_test.cpp
         test_persistent_stack.cpp
         test_utils.cpp
-        function_address_holder_test.cpp
         thread_local_non_owning_storage_test.cpp
         thread_local_owning_storage_test.cpp
         persistent_stack_multithreading_test.cpp
@@ -20,9 +19,9 @@ add_executable(
         call_multithreading_test.cpp
         answer_test.cpp
         ../code/persistent_stack/ram_stack.cpp
-        ../code/globals/function_address_holder.cpp
         ../code/persistent_stack/persistent_stack.cpp
         ../code/common/pmem_utils.cpp
         ../code/persistent_stack/call.cpp
+        ../code/model/function_address_holder.cpp
 )
 target_link_libraries(Google_Tests_run pmem gtest gtest_main)

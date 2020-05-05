@@ -2,7 +2,9 @@
 #include "cstring"
 #include <utility>
 #include "../common/pmem_utils.h"
-#include "../globals/function_address_holder.h"
+#include "../globals/global_storage.h"
+#include "../common/constants_and_types.h"
+#include "../model/function_address_holder.h"
 
 std::pair<stack_frame, bool> read_frame(const uint8_t* frame_mem)
 {
@@ -143,7 +145,7 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
 }
 
 // TODO: allow call_recover = true only if system is in recovery mode
-// TODO: add global_holder<T> and write function_address_holder using it
+// TODO: add global_holder<T> and write global_storage using it
 void do_call(const std::string& function_name, const std::vector<uint8_t>& args, bool call_recover)
 {
     add_new_frame(
@@ -154,11 +156,13 @@ void do_call(const std::string& function_name, const std::vector<uint8_t>& args,
     function_ptr f_ptr;
     if (call_recover)
     {
-        f_ptr = function_address_holder::functions[function_name].second;
+        f_ptr = global_storage<function_address_holder>::get_const_object()
+                .funcs.at(function_name).second;
     }
     else
     {
-        f_ptr = function_address_holder::functions[function_name].first;
+        f_ptr = global_storage<function_address_holder>::get_const_object()
+                .funcs.at(function_name).first;
     }
     f_ptr(args.data());
     remove_frame(

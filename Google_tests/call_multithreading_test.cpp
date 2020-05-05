@@ -2,12 +2,11 @@
 #include "../code/persistent_stack/persistent_stack.h"
 #include "../code/persistent_stack/ram_stack.h"
 #include "../code/persistent_stack/call.h"
-#include "../code/globals/thread_local_non_owning_storage.h"
-#include "../code/globals/thread_local_owning_storage.h"
-#include "../code/globals/function_address_holder.h"
+#include "../code/globals/global_storage.h"
 #include "test_utils.h"
 #include <functional>
 #include <thread>
+#include "../code/model/function_address_holder.h"
 
 namespace
 {
@@ -54,15 +53,16 @@ TEST(call_multithreading, restoration_after_crash)
     }
     std::function<void()> execution = [number_of_threads, &temp_files]()
     {
-        function_address_holder::functions.clear();
+        global_storage<function_address_holder>::set_object(function_address_holder());
+        global_storage<function_address_holder>::get_object().funcs.clear();
 
-        function_address_holder::functions["f_0"] = std::make_pair(f_0, f_0);
-        function_address_holder::functions["g_0"] = std::make_pair(g_0, g_0);
-        function_address_holder::functions["h_0"] = std::make_pair(h_0, h_0);
+        global_storage<function_address_holder>::get_object().funcs["f_0"] = std::make_pair(f_0, f_0);
+        global_storage<function_address_holder>::get_object().funcs["g_0"] = std::make_pair(g_0, g_0);
+        global_storage<function_address_holder>::get_object().funcs["h_0"] = std::make_pair(h_0, h_0);
 
-        function_address_holder::functions["f_1"] = std::make_pair(f_1, f_1);
-        function_address_holder::functions["g_1"] = std::make_pair(g_1, g_1);
-        function_address_holder::functions["h_1"] = std::make_pair(h_1, h_1);
+        global_storage<function_address_holder>::get_object().funcs["f_1"] = std::make_pair(f_1, f_1);
+        global_storage<function_address_holder>::get_object().funcs["g_1"] = std::make_pair(g_1, g_1);
+        global_storage<function_address_holder>::get_object().funcs["h_1"] = std::make_pair(h_1, h_1);
 
         std::vector<persistent_stack> stacks;
         for (uint32_t i = 0; i < number_of_threads; ++i)

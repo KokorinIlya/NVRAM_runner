@@ -2,9 +2,10 @@
 #include "../code/persistent_stack/persistent_stack.h"
 #include "../code/persistent_stack/ram_stack.h"
 #include "../code/persistent_stack/call.h"
-#include "../code/globals/function_address_holder.h"
+#include "../code/globals/global_storage.h"
 #include "test_utils.h"
 #include <functional>
+#include "../code/model/function_address_holder.h"
 
 namespace
 {
@@ -60,11 +61,12 @@ TEST(answer, return_value)
 {
     std::string file_name = get_temp_file_name("stack");
     temp_file file(file_name);
-    function_address_holder::functions.clear();
-    function_address_holder::functions["f"] = std::make_pair(f, f);
-    function_address_holder::functions["g"] = std::make_pair(g, g);
-    function_address_holder::functions["h"] = std::make_pair(h, h);
-    function_address_holder::functions["l"] = std::make_pair(l, l);
+    global_storage<function_address_holder>::set_object(function_address_holder());
+    global_storage<function_address_holder>::get_object().funcs.clear();
+    global_storage<function_address_holder>::get_object().funcs["f"] = std::make_pair(f, f);
+    global_storage<function_address_holder>::get_object().funcs["g"] = std::make_pair(g, g);
+    global_storage<function_address_holder>::get_object().funcs["h"] = std::make_pair(h, h);
+    global_storage<function_address_holder>::get_object().funcs["l"] = std::make_pair(l, l);
     persistent_stack p_stack(file.file_name, false);
     thread_local_non_owning_storage<persistent_stack>::ptr = &p_stack;
     thread_local_owning_storage<ram_stack>::set_object(ram_stack());
@@ -79,9 +81,10 @@ TEST(answer, read_own_value)
 {
     std::string file_name = get_temp_file_name("stack");
     temp_file file(file_name);
-    function_address_holder::functions.clear();
-    function_address_holder::functions["b"] = std::make_pair(b, b);
-    function_address_holder::functions["a"] = std::make_pair(a, a);
+    global_storage<function_address_holder>::set_object(function_address_holder());
+    global_storage<function_address_holder>::get_object().funcs.clear();
+    global_storage<function_address_holder>::get_object().funcs["b"] = std::make_pair(b, b);
+    global_storage<function_address_holder>::get_object().funcs["a"] = std::make_pair(a, a);
     persistent_stack p_stack(file.file_name, false);
     thread_local_non_owning_storage<persistent_stack>::ptr = &p_stack;
     thread_local_owning_storage<ram_stack>::set_object(ram_stack());

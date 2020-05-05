@@ -11,10 +11,10 @@ add_executable(
         Diplom
         main.cpp
         code/persistent_stack/ram_stack.cpp
-        code/globals/function_address_holder.cpp
         code/persistent_stack/persistent_stack.cpp
         code/common/pmem_utils.cpp
         code/persistent_stack/call.cpp
+        code/model/function_address_holder.cpp
 )
 target_link_libraries(Diplom pmem pthread)
 add_subdirectory(Google_tests)
