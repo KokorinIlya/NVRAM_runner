@@ -145,7 +145,6 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
 }
 
 // TODO: allow call_recover = true only if system is in recovery mode
-// TODO: add global_holder<T> and write global_storage using it
 void do_call(const std::string& function_name, const std::vector<uint8_t>& args, bool call_recover)
 {
     add_new_frame(

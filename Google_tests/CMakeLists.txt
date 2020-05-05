@@ -5,10 +5,13 @@ project(Google_tests)
 add_subdirectory(lib)
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-# 'Google_Tests_run' is the target name
-# 'test1.cpp tests2.cpp' are source files with tests
 add_executable(
         Google_Tests_run
+        ../code/persistent_stack/ram_stack.cpp
+        ../code/persistent_stack/persistent_stack.cpp
+        ../code/common/pmem_utils.cpp
+        ../code/persistent_stack/call.cpp
+        ../code/model/function_address_holder.cpp
         queue_test.cpp
         test_persistent_stack.cpp
         test_utils.cpp
@@ -18,10 +21,6 @@ add_executable(
         call_test.cpp
         call_multithreading_test.cpp
         answer_test.cpp
-        ../code/persistent_stack/ram_stack.cpp
-        ../code/persistent_stack/persistent_stack.cpp
-        ../code/common/pmem_utils.cpp
-        ../code/persistent_stack/call.cpp
-        ../code/model/function_address_holder.cpp
+        global_storage_test.cpp
 )
 target_link_libraries(Google_Tests_run pmem gtest gtest_main)

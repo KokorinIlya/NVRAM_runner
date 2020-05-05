@@ -12,7 +12,9 @@
  * when the thread finishes. The object should be allocated in master thread and
  * destroyed by master thread, when the thread, that could use this object, finally finishes
  * it's execution.
- * @tparam T class of object, pointer of which will be stored.
+ * Since objects are thread-local, there is no need to synchronize access to them
+ * by mutex or some other synchronization primitives.
+ * @tparam T - class of object, pointer of which will be stored.
  */
 template <typename T>
 struct thread_local_non_owning_storage

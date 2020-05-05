@@ -5,28 +5,37 @@
 #include <stdexcept>
 
 /**
- * TODO: update docs
  * TODO: test
- * Holds mapping from function name to pair - address of the function and address of the
- * recover version of the function.
- * Since there should be only one such mapping in the system, it is stored as a static hash map.
- * All functions, that will be called during the execution, should be registered in the map.
- * Since the map is not protected by any lock, it should be correctly initialized from a single process
- * to be used in a multi-threading environment.
- * For example, it can be initialized using next sequence of steps:
+ * Stores instances of some object of type T as global singleton object.
+ * For all program threads, only one instance of T is stored, but instances of this class
+ * for different types (for example, global_storage<int> and global_storage<string>)
+ * store different objects.
+ * Initially, no object is stored, and if get_object is called before set_object,
+ * an exception will be raised, for correct behaviour set_object should be called before
+ * any get_object calls.
+ * Multiple calls to set_object are allowed, each of the get_object calls
+ * should return object, that was argument of the last set_object call.
+ * Since the stored object is visible by all program threads and access to the object is
+ * not synchronized (by mutex, for example), user should himself ensure, that all threads access
+ * shared object correctly (without race conditions, for example).
+ * For example, shared object can be used according to next pattern:
  * <ul>
  *  <li>
- *      From a master thread, add all functions to the map
+ *      From a master thread, initialize global object and store it using set_object.
  *  </li>
  *  <li>
- *      Spawn N worker threads, each of which has read-only access to the map
+ *      Spawn N worker threads, each of which has read-only access to the global object
+ *      using only get_const_object, and therefore, none of the worker threads can
+ *      modify stored object.
  *  </li>
  * </ul>
- * Since there is happens-before relation between spawn of a thread and first action in the spawned thread,
- * worker threads can read from map correctly without locking. Note, that after worker threads spawn,
- * all threads in the system are forbidden to modify the map.
- *
- * Map is stored in the RAM and should be initialized after each system restart.
+ * Since there is happens-before relation between spawn of a thread and first action in the
+ * spawned thread, worker threads can read stored correctly without locking. Note, that
+ * after worker threads spawn, all threads in the system are forbidden to modify the stored object
+ * in order to prevent race conditions.
+ * However, user can use his own access protocols (for example, access to global object can be
+ * synchronized using global_storage<std::mutex>).
+ * @tparam T - class of object, which will be stored.
  */
 template <typename T>
 struct global_storage
@@ -35,10 +44,22 @@ private:
     static std::optional<T> object_opt;
 
 public:
+    /**
+     * Global storage  will store the object, that is passed as an argument.
+     * @param object - object to store
+     */
     static void set_object(const T& object);
 
+    /**
+     * Returns reference to the object, that is stored in the global storage.
+     * @return object, that was an argument of the last call to set_object.
+     */
     static T& get_object();
 
+    /**
+     * Returns constant reference to the object, that is stored in the global storage.
+     * @return object, that was an argument of the last call to set_object.
+     */
     static const T& get_const_object();
 };
 

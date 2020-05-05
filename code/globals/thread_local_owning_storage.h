@@ -6,18 +6,21 @@
 
 /**
  * Stores instances of some object of type T as thread local singleton object.
- * Stored object is considered singleton object for each of the program threads,
+ * For each of the program threads, stored object is considered singleton object,
  * and for different threads this storage can store different objects of the same type.
  * Storage owns object, that is stored inside, and when the thread finishes,
  * object is destroyed.
  * Also, even in one thread, instances of this class for different types
  * (for example, thread_local_owning_storage<int> and
- * thread_local_owning_storage<string>) store different objects
+ * thread_local_owning_storage<string>) store different objects.
  * Initially, in each of the threads no object is stored, and if get_object
  * is called before set_object, an exception will be raised.
  * In each thread set_object should be called before any get_object calls.
  * In each thread multiple calls to set_object are allowed, each of the get_object calls
  * should return object, that was argument of the last set_object call.
+ * Since objects are thread-local, there is no need to synchronize access to them
+ * by mutex or some other synchronization primitives.
+ * @tparam T - class of object, which will be stored.
  */
 template <typename T>
 struct thread_local_owning_storage
@@ -34,13 +37,13 @@ public:
 
     /**
      * Returns reference to the object, that is stored in the thread-local storage.
-     * @return object, that was an argument of the last call to set_object.
+     * @return object, that was an argument of the last call to set_object in this thread.
      */
     static T& get_object();
 
     /**
      * Returns constant reference to the object, that is stored in the thread-local storage.
-     * @return object, that was an argument of the last call to set_object.
+     * @return object, that was an argument of the last call to set_object in this thread.
      */
     static const T& get_const_object();
 };
