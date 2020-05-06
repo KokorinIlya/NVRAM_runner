@@ -110,7 +110,7 @@ TEST(pmem_utils, address_in_stack_multithreading_test)
 
 TEST(pmem_utils, flush_test)
 {
-    uint32_t test_count = 10;
+    uint32_t test_count = 100;
     for (int i = 0; i < test_count; ++i)
     {
         temp_file file(get_temp_file_name("stack"));
@@ -127,7 +127,7 @@ TEST(pmem_utils, flush_test)
             {
                 *(ptr + j) = j;
             }
-            pmem_do_flush(ptr, end_offset);
+            pmem_do_flush(ptr, end_offset * sizeof(uint32_t));
             exit(EXIT_SUCCESS);
         }
         else
@@ -142,7 +142,8 @@ TEST(pmem_utils, flush_test)
             {
                 EXPECT_EQ(*(ptr + j), j);
             }
-            munmap(pmemaddr, (end_offset + 1) * sizeof(uint32_t));
+            munmap(pmemaddr, end_offset * sizeof(uint32_t));
+            close(fd);
         }
     }
 }
