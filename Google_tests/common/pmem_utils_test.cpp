@@ -7,6 +7,11 @@
 #include "../../code/storage/thread_local_non_owning_storage.h"
 #include <thread>
 #include <functional>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <cstring>
 
 TEST(pmem_utils, align)
 {
@@ -100,5 +105,44 @@ TEST(pmem_utils, address_in_stack_multithreading_test)
     for (std::thread& cur_thread: threads)
     {
         cur_thread.join();
+    }
+}
+
+TEST(pmem_utils, flush_test)
+{
+    uint32_t test_count = 10;
+    for (int i = 0; i < test_count; ++i)
+    {
+        temp_file file(get_temp_file_name("stack"));
+        uint32_t end_offset = (PAGE_SIZE * 10) + 10;
+        pid_t pid_id = fork();
+        if (pid_id == 0)
+        {
+            int fd = open(file.file_name.c_str(), O_CREAT | O_RDWR, 0666);
+            posix_fallocate(fd, 0, end_offset * sizeof(uint32_t));
+            void* pmemaddr = mmap(nullptr, end_offset * sizeof(uint32_t),
+                                  PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+            uint32_t* ptr = static_cast<uint32_t*>(pmemaddr);
+            for (uint32_t j = 0; j < end_offset; j++)
+            {
+                *(ptr + j) = j;
+            }
+            pmem_do_flush(ptr, end_offset);
+            exit(EXIT_SUCCESS);
+        }
+        else
+        {
+            int status = 0;
+            waitpid(pid_id, &status, 0);
+            int fd = open(file.file_name.c_str(), O_RDWR, 0666);
+            void* pmemaddr = mmap(nullptr, end_offset * sizeof(uint32_t),
+                                  PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+            uint32_t* ptr = static_cast<uint32_t*>(pmemaddr);
+            for (uint32_t j = 0; j < end_offset; j++)
+            {
+                EXPECT_EQ(*(ptr + j), j);
+            }
+            munmap(pmemaddr, (end_offset + 1) * sizeof(uint32_t));
+        }
     }
 }
