@@ -15,6 +15,7 @@ add_executable(
         code/common/pmem_utils.cpp
         code/persistent_stack/call.cpp
         code/model/function_address_holder.cpp
+        code/common/constants_and_types.cpp
 )
 target_link_libraries(Diplom pmem pthread)
 add_subdirectory(Google_tests)
