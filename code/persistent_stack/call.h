@@ -64,7 +64,10 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack);
  *  </li>
  * </ul>
  * If call_recover is false (usually), calls ordinary version of the function. Otherwise,
- * calls recovery version.
+ * calls recovery version. Note, that recover version of the function can be called
+ * only when the system is running in recovery mode (mode, in which the system is running,
+ * is determined using global_storage<system_mode>). If system mode is not RECOVERY and
+ * call_recover is true, std::runtime_error will be thrown.
  * Can write ans_filler to a memory, where function, that is being called, will write it's answer.
  * This memory is located in the current stack frame. If ans_filler size is not between
  * 1 and 8 bytes inclusively, std::runtime_error will be thrown. This parameter can be used to
@@ -84,7 +87,8 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack);
  *                       version will be called.
  * @param call_recover - specifies, which of the function should be called
  *                       (ordinary or recovery version).
- * @throws std::runtime_error - if ans_filler size is not between 1 and 8 bytes inclusively.
+ * @throws std::runtime_error - if ans_filler size is not between 1 and 8 bytes inclusively or
+ *                              if call_recover is true and system is not running in recovery mode.
  */
 void do_call(std::string const& function_name,
              std::vector<uint8_t> const& args,

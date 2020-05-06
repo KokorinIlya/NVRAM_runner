@@ -5,6 +5,7 @@
 #include "../storage/global_storage.h"
 #include "../common/constants_and_types.h"
 #include "../model/function_address_holder.h"
+#include "../model/system_mode.h"
 
 std::pair<stack_frame, bool> read_frame(const uint8_t* frame_mem)
 {
@@ -144,7 +145,6 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
     pmem_do_flush(stack_mem + offset - 1, 1);
 }
 
-// TODO: allow call_recover = true only if system is in recovery mode
 void do_call(const std::string& function_name,
              const std::vector<uint8_t>& args,
              std::optional<std::vector<uint8_t>> const& ans_filler,
@@ -177,12 +177,21 @@ void do_call(const std::string& function_name,
                 ans_filler->size()
         );
     }
-    add_new_frame(r_stack,stack_frame{function_name, args},*p_stack);
+    add_new_frame(r_stack, stack_frame{function_name, args}, *p_stack);
     function_ptr f_ptr;
     if (call_recover)
     {
-        f_ptr = global_storage<function_address_holder>::get_const_object()
-                .funcs.at(function_name).second;
+        if (global_storage<system_mode>::get_const_object() == system_mode::RECOVERY)
+        {
+            f_ptr = global_storage<function_address_holder>::get_const_object()
+                    .funcs.at(function_name).second;
+        }
+        else
+        {
+            throw std::runtime_error("Cannot call recovery function"
+                                     " when system is running in execution mode");
+        }
+
     }
     else
     {
@@ -190,7 +199,7 @@ void do_call(const std::string& function_name,
                 .funcs.at(function_name).first;
     }
     f_ptr(args.data());
-    remove_frame(r_stack,*p_stack);
+    remove_frame(r_stack, *p_stack);
 }
 
 void write_answer(std::vector<uint8_t> const& answer)
