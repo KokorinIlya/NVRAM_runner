@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include "constants_and_types.h"
 
 /**
  * Forces all memory in the range [addr, addr+len) to be stored durably
@@ -14,5 +15,13 @@
  * @param len - length of the range.
  */
 void pmem_do_flush(const void* ptr, size_t len);
+
+// TODO: test
+/**
+ * Returns minimal possible x, such that x >= addr and x % CACHE_LINE_SIZE == 0.
+ * @param address - address to start searching aligned address from.
+ * @return aligned address.
+ */
+uint64_t get_cache_line_aligned_address(uint64_t address);
 
 #endif //DIPLOM_PMEM_UTILS_H
