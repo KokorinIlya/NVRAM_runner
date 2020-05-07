@@ -19,6 +19,12 @@ void pmem_do_flush(const void* ptr, size_t len);
 
 /**
  * Returns minimal possible x, such that x >= addr and x % CACHE_LINE_SIZE == 0.
+ * Note, that if this function is used to align pointer to memory mapped file
+ * or device, function can be used to align only offset from the beginning of the
+ * mapping, since address of the beginning of the mapping is already aligned by
+ * PAGE_SIZE (because address of the beginning of the mapping is returned by mmap).
+ * In such case, get_cache_line_aligned_address(begin_btr + offset) ==
+ * begin_ptr + get_cache_line_aligned_address(offset).
  * @param address - address to start searching aligned address from.
  * @return aligned address.
  */

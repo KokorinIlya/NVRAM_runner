@@ -8,6 +8,7 @@ uint64_t get_frame_size(const positioned_frame& frame)
      * function name
      * 8 bytes of arguments size
      * arguments
+     * 0 <= n < CACHE_LINE_SIZE bytes for alignment of the beginning of answer
      * 8 bytes for answer
      * 1 byte for end marker
      */
