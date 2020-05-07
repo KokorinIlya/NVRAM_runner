@@ -3,40 +3,40 @@
 #include <utility>
 #include "../common/pmem_utils.h"
 #include "../storage/global_storage.h"
-#include "../common/constants_and_types.h"
 #include "../model/function_address_holder.h"
 #include "../model/system_mode.h"
+#include <assert.h>
 
-std::pair<stack_frame, bool> read_frame(const uint8_t* frame_mem)
+std::pair<stack_frame, bool> read_frame(const uint8_t* stack_ptr, const uint64_t frame_offset)
 {
-    uint64_t cur_offset = 0;
+    uint64_t cur_offset = frame_offset;
 
     /*
      * Read 8 bytes of function name len
      */
     uint64_t function_name_len;
-    std::memcpy(&function_name_len, frame_mem + cur_offset, 8);
+    std::memcpy(&function_name_len, stack_ptr + cur_offset, 8);
     cur_offset += 8;
 
     /*
      * Read function_name_len bytes of function name
      */
     std::string function_name(function_name_len, '#');
-    std::memcpy(&function_name[0], frame_mem + cur_offset, function_name_len);
+    std::memcpy(&function_name[0], stack_ptr + cur_offset, function_name_len);
     cur_offset += function_name_len;
 
     /*
      * Read 8 bytes of args len
      */
     uint64_t args_len;
-    std::memcpy(&args_len, frame_mem + cur_offset, 8);
+    std::memcpy(&args_len, stack_ptr + cur_offset, 8);
     cur_offset += 8;
 
     /*
      * Read args_len bytes of args
      */
     std::vector<uint8_t> args(args_len);
-    std::memcpy(args.data(), frame_mem + cur_offset, args_len);
+    std::memcpy(args.data(), stack_ptr + cur_offset, args_len);
     cur_offset += args_len;
 
     /*
@@ -48,7 +48,7 @@ std::pair<stack_frame, bool> read_frame(const uint8_t* frame_mem)
      * Read 1 byte of end marker
      */
     uint8_t end_marker;
-    std::memcpy(&end_marker, frame_mem + cur_offset, 1);
+    std::memcpy(&end_marker, stack_ptr + cur_offset, 1);
     const bool is_last = end_marker == 0x1;
 
     return std::make_pair(stack_frame{function_name, args}, is_last);
@@ -62,7 +62,7 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
 
     while (true)
     {
-        const std::pair<stack_frame, bool> read_result = read_frame(stack_mem + cur_offset);
+        const std::pair<stack_frame, bool> read_result = read_frame(stack_mem, cur_offset);
         const bool is_last = read_result.second;
         const positioned_frame pos_frame = positioned_frame{read_result.first, cur_offset};
         stack.push(pos_frame);
@@ -71,7 +71,7 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
         {
             return stack;
         }
-        cur_offset += get_frame_size(read_result.first);
+        cur_offset += get_frame_size(pos_frame);
     }
 }
 
@@ -120,7 +120,10 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
      */
     const uint8_t stack_end_marker = 0x1;
     std::memcpy(stack_mem + cur_offset, &stack_end_marker, 1);
-    pmem_do_flush(stack_mem + new_frame_offset, get_frame_size(frame));
+    cur_offset += 1;
+
+    pmem_do_flush(stack_mem + new_frame_offset, cur_offset - new_frame_offset);
+    assert(get_frame_size(stack.top()) == cur_offset - new_frame_offset);
 
     if (new_frame_offset != 0)
     {

@@ -1,6 +1,6 @@
 #include "ram_stack.h"
 
-uint64_t get_frame_size(const stack_frame& frame)
+uint64_t get_frame_size(const positioned_frame& frame)
 {
     /*
      * 8 bytes of function name size
@@ -10,7 +10,9 @@ uint64_t get_frame_size(const stack_frame& frame)
      * 8 bytes for answer
      * 1 byte for end marker
      */
-    return frame.function_name.size() + frame.args.size() + 25;
+    return frame.frame.function_name.size() +
+           frame.frame.args.size() +
+           25;
 }
 
 uint64_t get_stack_end(const ram_stack& stack)
@@ -20,5 +22,5 @@ uint64_t get_stack_end(const ram_stack& stack)
         return 0;
     }
     const positioned_frame& last_frame = stack.top();
-    return last_frame.position + get_frame_size(last_frame.frame);
+    return last_frame.position + get_frame_size(last_frame);
 }
