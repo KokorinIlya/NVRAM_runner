@@ -1,4 +1,5 @@
 #include "ram_stack.h"
+#include "../common/pmem_utils.h"
 
 uint64_t get_frame_size(const positioned_frame& frame)
 {
@@ -10,9 +11,14 @@ uint64_t get_frame_size(const positioned_frame& frame)
      * 8 bytes for answer
      * 1 byte for end marker
      */
-    return frame.frame.function_name.size() +
-           frame.frame.args.size() +
-           25;
+    const uint64_t base_answer_offset = frame.position +
+                                        frame.frame.args.size() +
+                                        frame.frame.function_name.size() +
+                                        16;
+    const uint64_t answer_offset = get_cache_line_aligned_address(
+            base_answer_offset
+    );
+    return answer_offset + 9 - frame.position;
 }
 
 uint64_t get_stack_end(const ram_stack& stack)

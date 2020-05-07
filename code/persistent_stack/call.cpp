@@ -39,6 +39,8 @@ std::pair<stack_frame, bool> read_frame(const uint8_t* stack_ptr, const uint64_t
     std::memcpy(args.data(), stack_ptr + cur_offset, args_len);
     cur_offset += args_len;
 
+    cur_offset = get_cache_line_aligned_address(cur_offset);
+
     /*
      * Skip 8 bytes of answer
      */
@@ -109,6 +111,8 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
     std::memcpy(stack_mem + cur_offset, frame.args.data(), args_len);
     cur_offset += args_len;
 
+    cur_offset = get_cache_line_aligned_address(cur_offset);
+
     /*
      * TODO: align by cache line
      * Skip 8 bytes for answer, do not write anything
@@ -171,9 +175,10 @@ void do_call(const std::string& function_name,
          * args_len bytes of args
          * to retrieve beginning of answer
          */
-        const uint64_t answer_offset = last_frame_offset + 16 +
+        const uint64_t base_answer_offset = last_frame_offset + 16 +
                                        r_stack.top().frame.args.size() +
                                        r_stack.top().frame.function_name.size();
+        const uint64_t answer_offset = get_cache_line_aligned_address(base_answer_offset);
         std::memcpy(
                 p_stack->get_stack_ptr() + answer_offset,
                 ans_filler->data(),
@@ -243,9 +248,10 @@ std::vector<uint8_t> read_answer(uint8_t size)
      * args_len bytes of args
      * to retrieve beginning of answer
      */
-    const uint64_t answer_offset = last_frame_offset + 16 +
+    const uint64_t base_answer_offset = last_frame_offset + 16 +
                                    r_stack.top().frame.args.size() +
                                    r_stack.top().frame.function_name.size();
+    const uint64_t answer_offset = get_cache_line_aligned_address(base_answer_offset);
     std::vector<uint8_t> answer(size);
     std::memcpy(answer.data(), p_stack->get_stack_ptr() + answer_offset, size);
     return answer;
