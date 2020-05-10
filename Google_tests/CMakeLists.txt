@@ -7,10 +7,11 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_executable(
         Google_Tests_run
-        ../code/persistent_stack/ram_stack.cpp
+        ../code/persistent_stack/frames.cpp
         ../code/persistent_stack/persistent_stack.cpp
-        ../code/common/pmem_utils.cpp
         ../code/persistent_stack/call.cpp
+        ../code/persistent_stack/ram_stack.cpp
+        ../code/common/pmem_utils.cpp
         ../code/model/function_address_holder.cpp
         ../code/common/constants_and_types.cpp
         blocking_queue/queue_test.cpp

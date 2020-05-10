@@ -4,11 +4,12 @@
 #include <string>
 #include <vector>
 #include "persistent_stack.h"
-#include "ram_stack.h"
+#include "frames.h"
 #include "../storage/thread_local_non_owning_storage.h"
 #include "../storage/thread_local_owning_storage.h"
 #include <vector>
 #include <optional>
+#include "ram_stack.h"
 
 /**
  * Reads stack from persistent memory to RAM. This function can be used

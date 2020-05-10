@@ -63,7 +63,7 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
         const std::pair<stack_frame, bool> read_result = read_frame(stack_mem, cur_offset);
         const bool is_last = read_result.second;
         const positioned_frame pos_frame = positioned_frame{read_result.first, cur_offset};
-        stack.push(pos_frame);
+        stack.add_frame(pos_frame);
 
         if (is_last)
         {
@@ -77,9 +77,9 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
 void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack& persistent_stack)
 {
     uint8_t* const stack_mem = persistent_stack.get_stack_ptr();
-    const uint64_t stack_end = get_stack_end(stack);
+    const uint64_t stack_end = stack.get_stack_end();
     const uint64_t new_frame_offset = get_cache_line_aligned_address(stack_end);
-    stack.push(positioned_frame{frame, new_frame_offset});
+    stack.add_frame(positioned_frame{frame, new_frame_offset});
 
     uint64_t cur_offset = new_frame_offset;
 
@@ -138,9 +138,8 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
         throw std::runtime_error("Cannot remove first frame of the stack");
     }
     uint8_t* const stack_mem = persistent_stack.get_stack_ptr();
-    stack.pop();
-    const positioned_frame cur_last_frame = stack.top();
-    const uint64_t end_marker_offset = cur_last_frame.position + get_frame_size(cur_last_frame.frame) - 1;
+    stack.remove_frame();
+    const uint64_t end_marker_offset = stack.get_stack_end() - 1;
     const uint8_t stack_end_marker = 0x1;
     std::memcpy(stack_mem + end_marker_offset, &stack_end_marker, 1);
     pmem_do_flush(stack_mem + end_marker_offset, 1);
@@ -162,7 +161,7 @@ void do_call(const std::string& function_name,
                     std::to_string(ans_filler->size())
             );
         }
-        const uint64_t last_frame_offset = r_stack.top().position;
+        const uint64_t last_frame_offset = r_stack.get_last_frame().position;
         assert(last_frame_offset % CACHE_LINE_SIZE == 0);
         std::memcpy(p_stack->get_stack_ptr() + last_frame_offset, ans_filler->data(), ans_filler->size());
         pmem_do_flush(p_stack->get_stack_ptr() + last_frame_offset, ans_filler->size());
@@ -195,18 +194,14 @@ void write_answer(std::vector<uint8_t> const& answer)
     {
         throw std::runtime_error("Cannot write answer of size " + std::to_string(answer.size()));
     }
-    // TODO: make it vector (or make own class for it)
-    ram_stack& r_stack = thread_local_owning_storage<ram_stack>::get_object();
+    ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
     persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
     if (r_stack.size() == 1)
     {
         throw std::runtime_error("Cannot return value from the first frame");
     }
-    const positioned_frame last_frame = r_stack.top();
-    r_stack.pop();
-    const uint64_t answer_offset = r_stack.top().position;
+    const uint64_t answer_offset = r_stack.get_answer_position();
     assert(answer_offset % CACHE_LINE_SIZE == 0);
-    r_stack.push(last_frame);
     std::memcpy(p_stack->get_stack_ptr() + answer_offset, answer.data(), answer.size());
     pmem_do_flush(p_stack->get_stack_ptr() + answer_offset, answer.size());
 }
@@ -219,7 +214,7 @@ std::vector<uint8_t> read_answer(uint8_t size)
     }
     ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
     persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
-    const uint64_t answer_offset = r_stack.top().position;
+    const uint64_t answer_offset = r_stack.get_last_frame().position;
     assert(answer_offset % CACHE_LINE_SIZE == 0);
     std::vector<uint8_t> answer(size);
     std::memcpy(answer.data(), p_stack->get_stack_ptr() + answer_offset, size);
@@ -232,17 +227,14 @@ std::vector<uint8_t> read_current_answer(uint8_t size)
     {
         throw std::runtime_error("Cannot read answer of size " + std::to_string(size));
     }
-    ram_stack& r_stack = thread_local_owning_storage<ram_stack>::get_object();
+    ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
     persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
     if (r_stack.size() == 1)
     {
         throw std::runtime_error("Cannot return value from the first frame");
     }
-    const positioned_frame last_frame = r_stack.top();
-    r_stack.pop();
-    const uint64_t answer_offset = r_stack.top().position;
+    const uint64_t answer_offset = r_stack.get_answer_position();
     assert(answer_offset % CACHE_LINE_SIZE == 0);
-    r_stack.push(last_frame);
     std::vector<uint8_t> answer(size);
     std::memcpy(answer.data(), p_stack->get_stack_ptr() + answer_offset, size);
     return answer;

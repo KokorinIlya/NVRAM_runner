@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "../../code/persistent_stack/persistent_stack.h"
-#include "../../code/persistent_stack/ram_stack.h"
+#include "../../code/persistent_stack/frames.h"
 #include "../../code/persistent_stack/call.h"
 #include "../../code/storage/global_storage.h"
 #include "../common/test_utils.h"

@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include <thread>
 #include "../../code/persistent_stack/persistent_stack.h"
-#include "../../code/persistent_stack/ram_stack.h"
+#include "../../code/persistent_stack/frames.h"
 #include "../../code/persistent_stack/call.h"
 #include "../common/test_utils.h"
 
@@ -93,8 +93,8 @@ TEST(persistent_stack_multithreading, add)
                 ram_stack& r_stack = thread_local_owning_storage<ram_stack>::get_object();
                 EXPECT_EQ(r_stack.size(), 3);
 
-                stack_frame frame_3 = r_stack.top().frame;
-                r_stack.pop();
+                stack_frame frame_3 = r_stack.get_last_frame().frame;
+                r_stack.remove_frame();
                 EXPECT_EQ(
                         frame_3.function_name,
                         "one_more_function_name_" + std::to_string(i)
@@ -104,8 +104,8 @@ TEST(persistent_stack_multithreading, add)
                         std::vector<uint8_t>({1, 3, 5, 7, 9, small_i})
                 );
 
-                stack_frame frame_2 = r_stack.top().frame;
-                r_stack.pop();
+                stack_frame frame_2 = r_stack.get_last_frame().frame;
+                r_stack.remove_frame();
                 EXPECT_EQ(
                         frame_2.function_name,
                         "another_function_name_" + std::to_string(i)
@@ -115,8 +115,8 @@ TEST(persistent_stack_multithreading, add)
                         std::vector<uint8_t>({2, 5, 1, 7, small_i})
                 );
 
-                stack_frame frame_1 = r_stack.top().frame;
-                r_stack.pop();
+                stack_frame frame_1 = r_stack.get_last_frame().frame;
+                r_stack.remove_frame();
                 EXPECT_EQ(
                         frame_1.function_name,
                         "some_function_name_" + std::to_string(i)
@@ -235,15 +235,15 @@ TEST(persistent_stack_multithreading, add_and_remove)
                 ram_stack& r_stack = thread_local_owning_storage<ram_stack>::get_object();
                 t_correct[i] = t_correct[i] && (r_stack.size() == 2);
 
-                stack_frame frame_2 = r_stack.top().frame;
-                r_stack.pop();
+                stack_frame frame_2 = r_stack.get_last_frame().frame;
+                r_stack.remove_frame();
                 t_correct[i] = t_correct[i] && (frame_2.function_name ==
                                                 "another_function_name_" + std::to_string(i));
                 t_correct[i] = t_correct[i] &&
                                (frame_2.args == std::vector<uint8_t>({2, 5, 1, 7, small_i}));
 
-                stack_frame frame_1 = r_stack.top().frame;
-                r_stack.pop();
+                stack_frame frame_1 = r_stack.get_last_frame().frame;
+                r_stack.remove_frame();
                 t_correct[i] = t_correct[i] && (frame_1.function_name ==
                                                 "some_function_name_" + std::to_string(i));
                 t_correct[i] = t_correct[i] &&
