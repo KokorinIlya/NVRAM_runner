@@ -69,7 +69,13 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
         {
             return stack;
         }
+        /*
+         * Position of first byte of last frame + length of last frame = position of first free byte
+         */
         cur_offset += get_frame_size(pos_frame.frame);
+        /*
+         * Align beginning of next frame
+         */
         cur_offset = get_cache_line_aligned_address(cur_offset);
     }
 }
@@ -77,8 +83,15 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
 void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack& persistent_stack)
 {
     uint8_t* const stack_mem = persistent_stack.get_stack_ptr();
+    /*
+     * First free byte of the stack
+     */
     const uint64_t stack_end = stack.get_stack_end();
+    /*
+     * New frame beginning should be aligned
+     */
     const uint64_t new_frame_offset = get_cache_line_aligned_address(stack_end);
+    assert(new_frame_offset % CACHE_LINE_SIZE == 0);
     stack.add_frame(positioned_frame{frame, new_frame_offset});
 
     uint64_t cur_offset = new_frame_offset;
@@ -119,12 +132,14 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
      */
     const uint8_t stack_end_marker = 0x1;
     std::memcpy(stack_mem + cur_offset, &stack_end_marker, 1);
-    cur_offset += 1;
 
     pmem_do_flush(stack_mem + new_frame_offset, get_frame_size(frame));
 
     if (stack_end != 0)
     {
+        /*
+         * Stack end marker is just before first free byte of the stack
+         */
         const uint8_t frame_end_marker = 0x0;
         std::memcpy(stack_mem + stack_end - 1, &frame_end_marker, 1);
         pmem_do_flush(stack_mem + stack_end - 1, 1);
@@ -139,6 +154,9 @@ void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
     }
     uint8_t* const stack_mem = persistent_stack.get_stack_ptr();
     stack.remove_frame();
+    /*
+     * Stack end marker is just before first free byte of the stack
+     */
     const uint64_t end_marker_offset = stack.get_stack_end() - 1;
     const uint8_t stack_end_marker = 0x1;
     std::memcpy(stack_mem + end_marker_offset, &stack_end_marker, 1);
@@ -214,6 +232,10 @@ std::vector<uint8_t> read_answer(uint8_t size)
     }
     ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
     persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
+    /*
+     * Function writes answer to the beginning of the previous frame.
+     * First 8 bytes of previous frame can hold answer.
+     */
     const uint64_t answer_offset = r_stack.get_last_frame().position;
     assert(answer_offset % CACHE_LINE_SIZE == 0);
     std::vector<uint8_t> answer(size);

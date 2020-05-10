@@ -71,7 +71,7 @@ struct persistent_stack
      * reading stack frames, but not for writing.
      * @return constant pointer to the beginning of the stack.
      */
-    const uint8_t* get_stack_ptr() const;
+    [[nodiscard]] const uint8_t* get_stack_ptr() const;
 
     /**
      * Returns pointer to beginning of the memory-mapping
@@ -79,7 +79,7 @@ struct persistent_stack
      * can be used both for reading and writing stack frames.
      * @return pointer to the beginning of the stack.
      */
-    uint8_t* get_stack_ptr();
+    [[nodiscard]] uint8_t* get_stack_ptr();
 
 private:
     int fd;
