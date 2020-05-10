@@ -12,6 +12,11 @@ void pmem_do_flush(const void* ptr, size_t len)
 
 uint64_t get_cache_line_aligned_address(uint64_t address)
 {
+    /*
+     * Cache line size must be power of two.
+     */
+    assert((CACHE_LINE_SIZE & (CACHE_LINE_SIZE - 1)) == 0);
+
     if (address % CACHE_LINE_SIZE == 0)
     {
         return address;

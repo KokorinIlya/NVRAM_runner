@@ -8,17 +8,22 @@ uint64_t get_frame_size(const positioned_frame& frame)
      * function name
      * 8 bytes of arguments size
      * arguments
-     * 0 <= n < CACHE_LINE_SIZE bytes for alignment of the beginning of answer
-     * 8 bytes for answer
-     * 1 byte for end marker
+     * to get address of possible beginning of answer
      */
     const uint64_t base_answer_offset = frame.position +
                                         frame.frame.args.size() +
                                         frame.frame.function_name.size() +
                                         16;
-    const uint64_t answer_offset = get_cache_line_aligned_address(
-            base_answer_offset
-    );
+    /*
+     * Align beginning of answer by CACHE_LINE_SIZE
+     */
+    const uint64_t answer_offset = get_cache_line_aligned_address(base_answer_offset);
+    /*
+     * 8 bytes of answer
+     * 1 byte of stack frame
+     * Frame size is difference between two offsets (offset of first byte after frame
+     * minus offset of first byte of frame)
+     */
     return answer_offset + 9 - frame.position;
 }
 

@@ -11,7 +11,7 @@
 #include <optional>
 
 /**
- * Reads stack from persistent emory to RAM. This function can be used
+ * Reads stack from persistent memory to RAM. This function can be used
  * just after the crash, to read stack of functions, that
  * were being executed, when the crash occurred.
  * @param persistent_stack - instance of class, that owns file,
@@ -41,7 +41,7 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
  * system architecture, each worker thread should take and execute tasks from
  * tasks queue in an infinite loop, this limitation shouldn't be considered a drawback.
  * @param stack - stack, that is stored in RAM. Should be representation
- * (i.e. contain the same data) as persistent stack.
+ *                (i.e. contain the same data) as persistent stack.
  * @param persistent_stack - stack, that is stored in file.
  * @throws std::runtime_error if the frame, that should be removed, is the only frame
  *                            in the stack.
@@ -154,9 +154,9 @@ std::vector<uint8_t> read_current_answer(uint8_t size);
  *
  * def f():
  *      g()
- *      read_answer(8) - reads answer of g
+ *      read_answer(8) - reads answer, that was written by function g
  *      h()
- *      read_answer(8) - reads answer of h
+ *      read_answer(8) - reads answer, that was written by function g
  *
  * This function can read from 1 up to 8 bytes. If previously returned function has written
  * N bytes of answer, then only N bytes can be retrieved correctly, N+1-th byte can contain

@@ -7,7 +7,7 @@
 #include "../model/system_mode.h"
 #include <cassert>
 
-std::pair<stack_frame, bool> read_frame(const uint8_t* stack_ptr, const uint64_t frame_offset)
+std::pair<stack_frame, bool> read_frame(const uint8_t* const stack_ptr, const uint64_t frame_offset)
 {
     uint64_t cur_offset = frame_offset;
 
@@ -83,6 +83,7 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
 
 void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack& persistent_stack)
 {
+    // TODO: move place for answer to the beginning of the stack
     uint8_t* const stack_mem = persistent_stack.get_stack_ptr();
     const uint64_t new_frame_offset = get_stack_end(stack);
     stack.push(positioned_frame{frame, new_frame_offset});
@@ -170,8 +171,10 @@ void do_call(const std::string& function_name,
     {
         if (ans_filler->empty() || ans_filler->size() > 8)
         {
-            throw std::runtime_error("Cannot write answer of size " +
-                                     std::to_string(ans_filler->size()));
+            throw std::runtime_error(
+                    "Cannot write answer of size " +
+                    std::to_string(ans_filler->size())
+            );
         }
         const uint64_t last_frame_offset = r_stack.top().position;
         /*
@@ -190,11 +193,8 @@ void do_call(const std::string& function_name,
          */
         const uint64_t answer_offset = get_cache_line_aligned_address(base_answer_offset);
         assert(answer_offset % CACHE_LINE_SIZE == 0);
-        std::memcpy(
-                p_stack->get_stack_ptr() + answer_offset,
-                ans_filler->data(),
-                ans_filler->size()
-        );
+        std::memcpy(p_stack->get_stack_ptr() + answer_offset, ans_filler->data(), ans_filler->size());
+        pmem_do_flush(p_stack->get_stack_ptr() + answer_offset, ans_filler->size());
     }
     add_new_frame(r_stack, stack_frame{function_name, args}, *p_stack);
     function_ptr f_ptr;
@@ -202,20 +202,17 @@ void do_call(const std::string& function_name,
     {
         if (global_storage<system_mode>::get_const_object() == system_mode::RECOVERY)
         {
-            f_ptr = global_storage<function_address_holder>::get_const_object()
-                    .funcs.at(function_name).second;
+            f_ptr = global_storage<function_address_holder>::get_const_object().funcs.at(function_name).second;
         }
         else
         {
-            throw std::runtime_error("Cannot call recovery function"
-                                     " when system is running in execution mode");
+            throw std::runtime_error("Cannot call recovery function when system is running in execution mode");
         }
 
     }
     else
     {
-        f_ptr = global_storage<function_address_holder>::get_const_object()
-                .funcs.at(function_name).first;
+        f_ptr = global_storage<function_address_holder>::get_const_object().funcs.at(function_name).first;
     }
     f_ptr(args.data());
     remove_frame(r_stack, *p_stack);
