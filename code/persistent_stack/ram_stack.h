@@ -49,7 +49,7 @@ using ram_stack = std::stack<positioned_frame>;
  * @param frame - frame, size of which will be calculated.
  * @return size of frame in bytes.
  */
-uint64_t get_frame_size(const positioned_frame &frame);
+uint64_t get_frame_size(const stack_frame &frame);
 
 /**
  * Returns address of stack end, i.e. offset from first free byte.
