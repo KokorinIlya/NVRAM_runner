@@ -15,11 +15,11 @@ std::pair<stack_frame, bool> read_frame(const uint8_t* const stack_ptr, const ui
     uint64_t cur_offset = frame_offset + 8;
 
     /*
-     * Read 8 bytes of function name len
+     * Read 2 bytes of function name len
      */
-    uint64_t function_name_len;
-    std::memcpy(&function_name_len, stack_ptr + cur_offset, 8);
-    cur_offset += 8;
+    uint16_t function_name_len;
+    std::memcpy(&function_name_len, stack_ptr + cur_offset, 2);
+    cur_offset += 2;
 
     /*
      * Read function_name_len bytes of function name
@@ -29,11 +29,11 @@ std::pair<stack_frame, bool> read_frame(const uint8_t* const stack_ptr, const ui
     cur_offset += function_name_len;
 
     /*
-     * Read 8 bytes of args len
+     * Read 2 bytes of args len
      */
-    uint64_t args_len;
-    std::memcpy(&args_len, stack_ptr + cur_offset, 8);
-    cur_offset += 8;
+    uint16_t args_len;
+    std::memcpy(&args_len, stack_ptr + cur_offset, 2);
+    cur_offset += 2;
 
     /*
      * Read args_len bytes of args
@@ -102,11 +102,11 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
     cur_offset += 8;
 
     /*
-     * Write 8 bytes of function name len
+     * Write 2 bytes of function name len
      */
-    const uint64_t function_name_len = frame.function_name.size();
-    std::memcpy(stack_mem + cur_offset, &function_name_len, 8);
-    cur_offset += 8;
+    const uint16_t function_name_len = frame.function_name.size();
+    std::memcpy(stack_mem + cur_offset, &function_name_len, 2);
+    cur_offset += 2;
 
     /*
      * Write function_name_len bytes of function name
@@ -115,11 +115,11 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
     cur_offset += function_name_len;
 
     /*
-     * Write 8 bytes of args len
+     * Write 2 bytes of args len
      */
-    const uint64_t args_len = frame.args.size();
-    std::memcpy(stack_mem + cur_offset, &args_len, 8);
-    cur_offset += 8;
+    const uint16_t args_len = frame.args.size();
+    std::memcpy(stack_mem + cur_offset, &args_len, 2);
+    cur_offset += 2;
 
     /*
      * Write args_len bytes of args len
