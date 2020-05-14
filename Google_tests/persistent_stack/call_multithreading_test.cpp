@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 #include "../../code/persistent_stack/persistent_stack.h"
-#include "../../code/persistent_stack/frames.h"
 #include "../../code/persistent_stack/call.h"
 #include "../../code/storage/global_storage.h"
 #include "../common/test_utils.h"
@@ -116,15 +115,15 @@ TEST(call_multithreading, restoration_after_crash)
                 ram_stack& r_stack = thread_local_owning_storage<ram_stack>::get_object();
                 EXPECT_EQ(r_stack.size(), 2);
 
-                stack_frame frame_2 = r_stack.get_last_frame().frame;
+                stack_frame frame_2 = r_stack.get_last_frame().get_frame();
                 r_stack.remove_frame();
-                EXPECT_EQ(frame_2.function_name, "g_" + std::to_string(i));
-                EXPECT_EQ(frame_2.args, std::vector<uint8_t>({4, 5, 6, small_i}));
+                EXPECT_EQ(frame_2.get_function_name(), "g_" + std::to_string(i));
+                EXPECT_EQ(frame_2.get_args(), std::vector<uint8_t>({4, 5, 6, small_i}));
 
-                stack_frame frame_1 = r_stack.get_last_frame().frame;
+                stack_frame frame_1 = r_stack.get_last_frame().get_frame();
                 r_stack.remove_frame();
-                EXPECT_EQ(frame_1.function_name, "f_" + std::to_string(i));
-                EXPECT_EQ(frame_1.args, std::vector<uint8_t>({1, 2, 3, small_i}));
+                EXPECT_EQ(frame_1.get_function_name(), "f_" + std::to_string(i));
+                EXPECT_EQ(frame_1.get_args(), std::vector<uint8_t>({1, 2, 3, small_i}));
             };
             threads.emplace_back(std::thread(thread_action));
         }

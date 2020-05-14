@@ -49,7 +49,7 @@ std::pair<stack_frame, bool> read_frame(const uint8_t* const stack_ptr, const ui
     std::memcpy(&end_marker, stack_ptr + cur_offset, 1);
     const bool is_last = end_marker == 0x1;
 
-    return std::make_pair(stack_frame{function_name, args}, is_last);
+    return std::make_pair(stack_frame(function_name, args), is_last);
 }
 
 ram_stack read_stack(const persistent_stack& persistent_stack)
@@ -62,7 +62,7 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
     {
         const std::pair<stack_frame, bool> read_result = read_frame(stack_mem, cur_offset);
         const bool is_last = read_result.second;
-        const positioned_frame pos_frame = positioned_frame{read_result.first, cur_offset};
+        const positioned_frame pos_frame = positioned_frame(read_result.first, cur_offset);
         stack.add_frame(pos_frame);
 
         if (is_last)
@@ -72,7 +72,7 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
         /*
          * Position of first byte of last frame + length of last frame = position of first free byte
          */
-        cur_offset += get_frame_size(pos_frame.frame);
+        cur_offset += pos_frame.get_frame().size();
         /*
          * Align beginning of next frame
          */
@@ -104,27 +104,27 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
     /*
      * Write 2 bytes of function name len
      */
-    const uint16_t function_name_len = frame.function_name.size();
+    const uint16_t function_name_len = frame.get_function_name().size();
     std::memcpy(stack_mem + cur_offset, &function_name_len, 2);
     cur_offset += 2;
 
     /*
      * Write function_name_len bytes of function name
      */
-    std::memcpy(stack_mem + cur_offset, frame.function_name.data(), function_name_len);
+    std::memcpy(stack_mem + cur_offset, frame.get_function_name().data(), function_name_len);
     cur_offset += function_name_len;
 
     /*
      * Write 2 bytes of args len
      */
-    const uint16_t args_len = frame.args.size();
+    const uint16_t args_len = frame.get_args().size();
     std::memcpy(stack_mem + cur_offset, &args_len, 2);
     cur_offset += 2;
 
     /*
      * Write args_len bytes of args len
      */
-    std::memcpy(stack_mem + cur_offset, frame.args.data(), args_len);
+    std::memcpy(stack_mem + cur_offset, frame.get_args().data(), args_len);
     cur_offset += args_len;
 
     /*
@@ -133,7 +133,7 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
     const uint8_t stack_end_marker = 0x1;
     std::memcpy(stack_mem + cur_offset, &stack_end_marker, 1);
 
-    pmem_do_flush(stack_mem + new_frame_offset, get_frame_size(frame));
+    pmem_do_flush(stack_mem + new_frame_offset, frame.size());
 
     if (stack_end != 0)
     {
@@ -179,7 +179,7 @@ void do_call(const std::string& function_name,
                     std::to_string(ans_filler->size())
             );
         }
-        const uint64_t last_frame_offset = r_stack.get_last_frame().position;
+        const uint64_t last_frame_offset = r_stack.get_last_frame().get_position();
         assert(last_frame_offset % CACHE_LINE_SIZE == 0);
         std::memcpy(p_stack->get_stack_ptr() + last_frame_offset, ans_filler->data(), ans_filler->size());
         pmem_do_flush(p_stack->get_stack_ptr() + last_frame_offset, ans_filler->size());
@@ -196,7 +196,6 @@ void do_call(const std::string& function_name,
         {
             throw std::runtime_error("Cannot call recovery function when system is running in execution mode");
         }
-
     }
     else
     {
@@ -236,7 +235,7 @@ std::vector<uint8_t> read_answer(uint8_t size)
      * Function writes answer to the beginning of the previous frame.
      * First 8 bytes of previous frame can hold answer.
      */
-    const uint64_t answer_offset = r_stack.get_last_frame().position;
+    const uint64_t answer_offset = r_stack.get_last_frame().get_position();
     assert(answer_offset % CACHE_LINE_SIZE == 0);
     std::vector<uint8_t> answer(size);
     std::memcpy(answer.data(), p_stack->get_stack_ptr() + answer_offset, size);

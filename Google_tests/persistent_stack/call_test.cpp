@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 #include "../../code/persistent_stack/persistent_stack.h"
-#include "../../code/persistent_stack/frames.h"
 #include "../../code/persistent_stack/call.h"
 #include "../../code/storage/global_storage.h"
 #include "../common/test_utils.h"
@@ -57,15 +56,15 @@ TEST(call, restoration_after_crash)
         thread_local_owning_storage<ram_stack>::set_object(r_stack);
         EXPECT_EQ(r_stack.size(), 2);
 
-        stack_frame g_frame = r_stack.get_last_frame().frame;
+        stack_frame g_frame = r_stack.get_last_frame().get_frame();
         r_stack.remove_frame();
-        EXPECT_EQ(g_frame.function_name, "g");
-        EXPECT_EQ(g_frame.args, std::vector<uint8_t>({4, 5, 6}));
+        EXPECT_EQ(g_frame.get_function_name(), "g");
+        EXPECT_EQ(g_frame.get_args(), std::vector<uint8_t>({4, 5, 6}));
 
-        stack_frame f_frame = r_stack.get_last_frame().frame;
+        stack_frame f_frame = r_stack.get_last_frame().get_frame();
         r_stack.remove_frame();
-        EXPECT_EQ(f_frame.function_name, "f");
-        EXPECT_EQ(f_frame.args, std::vector<uint8_t>({1, 2, 3}));
+        EXPECT_EQ(f_frame.get_function_name(), "f");
+        EXPECT_EQ(f_frame.get_args(), std::vector<uint8_t>({1, 2, 3}));
     };
     restoration();
 }

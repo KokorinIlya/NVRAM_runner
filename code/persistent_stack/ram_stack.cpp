@@ -13,7 +13,7 @@ uint64_t ram_stack::get_stack_end() const
     /*
      * Offset of first byte of last frame + size of last frame = offset of first free byte.
      */
-    return last_frame.position + get_frame_size(last_frame.frame);
+    return last_frame.get_position() + last_frame.get_frame().size();
 }
 
 uint32_t ram_stack::size() const
@@ -33,7 +33,7 @@ uint64_t ram_stack::get_answer_position() const
      * stack frame. First 8 bytes of previous stack frame is a place, where
      * function, that is currently being executed, can store it's answer.
      */
-    return frames[frames.size() - 2].position;
+    return frames[frames.size() - 2].get_position();
 }
 
 void ram_stack::remove_frame()

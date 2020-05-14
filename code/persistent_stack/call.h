@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "persistent_stack.h"
-#include "frames.h"
+#include "../frame/positioned_frame.h"
 #include "../storage/thread_local_non_owning_storage.h"
 #include "../storage/thread_local_owning_storage.h"
 #include <vector>

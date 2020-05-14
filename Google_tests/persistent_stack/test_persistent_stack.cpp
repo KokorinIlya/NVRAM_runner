@@ -1,5 +1,4 @@
 #include "../../code/persistent_stack/persistent_stack.h"
-#include "../../code/persistent_stack/frames.h"
 #include "../../code/persistent_stack/call.h"
 #include "gtest/gtest.h"
 #include "../common/test_utils.h"
@@ -19,9 +18,9 @@ TEST(persistent_stack, add_frame)
 
     ram_stack another_r_stack = read_stack(p_stack);
     EXPECT_EQ(another_r_stack.size(), 1);
-    stack_frame top_frame = another_r_stack.get_last_frame().frame;
-    EXPECT_EQ(top_frame.function_name, "some_function_name");
-    EXPECT_EQ(top_frame.args, std::vector<uint8_t>({1, 3, 3, 7}));
+    stack_frame top_frame = another_r_stack.get_last_frame().get_frame();
+    EXPECT_EQ(top_frame.get_function_name(), "some_function_name");
+    EXPECT_EQ(top_frame.get_args(), std::vector<uint8_t>({1, 3, 3, 7}));
 }
 
 TEST(persistent_stack, add_multiple_frames)
@@ -52,20 +51,20 @@ TEST(persistent_stack, add_multiple_frames)
     ram_stack another_r_stack = read_stack(p_stack);
     EXPECT_EQ(another_r_stack.size(), 3);
 
-    stack_frame another_frame_3 = another_r_stack.get_last_frame().frame;
+    stack_frame another_frame_3 = another_r_stack.get_last_frame().get_frame();
     another_r_stack.remove_frame();
-    EXPECT_EQ(another_frame_3.function_name, "one_more_function_name");
-    EXPECT_EQ(another_frame_3.args, std::vector<uint8_t>({1, 3, 5, 7, 9}));
+    EXPECT_EQ(another_frame_3.get_function_name(), "one_more_function_name");
+    EXPECT_EQ(another_frame_3.get_args(), std::vector<uint8_t>({1, 3, 5, 7, 9}));
 
-    stack_frame another_frame_2 = another_r_stack.get_last_frame().frame;
+    stack_frame another_frame_2 = another_r_stack.get_last_frame().get_frame();
     another_r_stack.remove_frame();
-    EXPECT_EQ(another_frame_2.function_name, "another_function_name");
-    EXPECT_EQ(another_frame_2.args, std::vector<uint8_t>({2, 5, 1, 7}));
+    EXPECT_EQ(another_frame_2.get_function_name(), "another_function_name");
+    EXPECT_EQ(another_frame_2.get_args(), std::vector<uint8_t>({2, 5, 1, 7}));
 
-    stack_frame another_frame_1 = another_r_stack.get_last_frame().frame;
+    stack_frame another_frame_1 = another_r_stack.get_last_frame().get_frame();
     another_r_stack.remove_frame();
-    EXPECT_EQ(another_frame_1.function_name, "some_function_name");
-    EXPECT_EQ(another_frame_1.args, std::vector<uint8_t>({1, 3, 3, 7}));
+    EXPECT_EQ(another_frame_1.get_function_name(), "some_function_name");
+    EXPECT_EQ(another_frame_1.get_args(), std::vector<uint8_t>({1, 3, 3, 7}));
 }
 
 TEST(persistent_stack, add_multiple_frames_remove_single_frame)
@@ -97,15 +96,15 @@ TEST(persistent_stack, add_multiple_frames_remove_single_frame)
     ram_stack another_r_stack = read_stack(p_stack);
     EXPECT_EQ(another_r_stack.size(), 2);
 
-    stack_frame another_frame_2 = another_r_stack.get_last_frame().frame;
+    stack_frame another_frame_2 = another_r_stack.get_last_frame().get_frame();
     another_r_stack.remove_frame();
-    EXPECT_EQ(another_frame_2.function_name, "another_function_name");
-    EXPECT_EQ(another_frame_2.args, std::vector<uint8_t>({2, 5, 1, 7}));
+    EXPECT_EQ(another_frame_2.get_function_name(), "another_function_name");
+    EXPECT_EQ(another_frame_2.get_args(), std::vector<uint8_t>({2, 5, 1, 7}));
 
-    stack_frame another_frame_1 = another_r_stack.get_last_frame().frame;
+    stack_frame another_frame_1 = another_r_stack.get_last_frame().get_frame();
     another_r_stack.remove_frame();
-    EXPECT_EQ(another_frame_1.function_name, "some_function_name");
-    EXPECT_EQ(another_frame_1.args, std::vector<uint8_t>({1, 3, 3, 7}));
+    EXPECT_EQ(another_frame_1.get_function_name(), "some_function_name");
+    EXPECT_EQ(another_frame_1.get_args(), std::vector<uint8_t>({1, 3, 3, 7}));
 }
 
 TEST(persistent_stack, add_and_remove_multiple_frames)
@@ -138,9 +137,9 @@ TEST(persistent_stack, add_and_remove_multiple_frames)
     ram_stack another_r_stack = read_stack(p_stack);
     EXPECT_EQ(another_r_stack.size(), 1);
 
-    stack_frame another_frame_1 = another_r_stack.get_last_frame().frame;
+    stack_frame another_frame_1 = another_r_stack.get_last_frame().get_frame();
     another_r_stack.remove_frame();
-    EXPECT_EQ(another_frame_1.function_name, "some_function_name");
-    EXPECT_EQ(another_frame_1.args, std::vector<uint8_t>({1, 3, 3, 7}));
+    EXPECT_EQ(another_frame_1.get_function_name(), "some_function_name");
+    EXPECT_EQ(another_frame_1.get_args(), std::vector<uint8_t>({1, 3, 3, 7}));
 }
 

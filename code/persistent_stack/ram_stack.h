@@ -2,7 +2,7 @@
 #define DIPLOM_RAM_STACK_H
 
 #include <vector>
-#include "frames.h"
+#include "../frame/positioned_frame.h"
 
 /**
  * Representation of persistent stack, that is stored
