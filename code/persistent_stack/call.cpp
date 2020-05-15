@@ -25,7 +25,7 @@ std::pair<stack_frame, bool> read_frame(const uint8_t* const stack_ptr, const ui
      * Read function_name_len bytes of function name
      */
     std::string function_name(function_name_len, '#');
-    std::memcpy(&function_name[0], stack_ptr + cur_offset, function_name_len);
+    std::memcpy(function_name.data(), stack_ptr + cur_offset, function_name_len);
     cur_offset += function_name_len;
 
     /*
