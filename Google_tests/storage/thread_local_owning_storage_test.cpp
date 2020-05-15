@@ -67,16 +67,7 @@ namespace
             other.should_delete = false;
         };
 
-        test& operator=(test const& other)
-        {
-            if (&other == this)
-            {
-                return *this;
-            }
-            t_correct = other.t_correct;
-            other.should_delete = false;
-            return *this;
-        };
+        test& operator=(test const& other) = delete;
 
         ~test()
         {

@@ -28,7 +28,7 @@ public:
 
     /**
      * Returns single element from the top of the queue and removes
-     * element, that was returned. Of there are no elements in the queue,
+     * element, that was returned. If there are no elements in the queue,
      * thread is blocked until at least one element is pushed in the queue.
      * @return - element from the top of the queue.
      */

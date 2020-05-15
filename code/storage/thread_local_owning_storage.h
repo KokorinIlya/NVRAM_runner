@@ -54,7 +54,7 @@ thread_local std::optional<T> thread_local_owning_storage<T>::object_opt = std::
 template <typename T>
 void thread_local_owning_storage<T>::set_object(const T& object)
 {
-    object_opt = std::make_optional(object);
+    object_opt.emplace(object);
 }
 
 template <typename T>

@@ -68,7 +68,7 @@ std::optional<T> global_storage<T>::object_opt = std::optional<T>();
 template <typename T>
 void global_storage<T>::set_object(const T& object)
 {
-    object_opt = std::make_optional(object);
+    object_opt.emplace(object);
 }
 
 template <typename T>
