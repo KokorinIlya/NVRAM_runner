@@ -108,7 +108,33 @@ TEST(pmem_utils, address_in_stack_multithreading_test)
     }
 }
 
-TEST(pmem_utils, flush_test)
+TEST(pmem_utils, flush_test_full)
+{
+    uint32_t test_count = 100;
+    for (int i = 0; i < test_count; ++i)
+    {
+        temp_file file(get_temp_file_name("stack"));
+        uint32_t end_offset = (PAGE_SIZE * 10) + 10;
+        int fd = open(file.file_name.c_str(), O_CREAT | O_RDWR, 0666);
+        posix_fallocate(fd, 0, end_offset * sizeof(uint32_t));
+        void* pmemaddr = mmap(nullptr, end_offset * sizeof(uint32_t),
+                              PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        uint32_t* ptr = static_cast<uint32_t*>(pmemaddr);
+        for (uint32_t j = 0; j < end_offset; j++)
+        {
+            *(ptr + j) = j;
+        }
+        pmem_do_flush(ptr, end_offset * sizeof(uint32_t));
+        for (uint32_t j = 0; j < end_offset; j++)
+        {
+            EXPECT_EQ(*(ptr + j), j);
+        }
+        munmap(pmemaddr, end_offset * sizeof(uint32_t));
+        close(fd);
+    }
+}
+
+TEST(pmem_utils, flush_test_full_fork)
 {
     uint32_t test_count = 100;
     for (int i = 0; i < test_count; ++i)
@@ -141,6 +167,88 @@ TEST(pmem_utils, flush_test)
             for (uint32_t j = 0; j < end_offset; j++)
             {
                 EXPECT_EQ(*(ptr + j), j);
+            }
+            munmap(pmemaddr, end_offset * sizeof(uint32_t));
+            close(fd);
+        }
+    }
+}
+
+TEST(pmem_utils, flush_test_partial)
+{
+    uint32_t test_count = 100;
+    for (int i = 0; i < test_count; ++i)
+    {
+        temp_file file(get_temp_file_name("stack"));
+        uint32_t end_offset = (PAGE_SIZE * 10) + 10;
+        int fd = open(file.file_name.c_str(), O_CREAT | O_RDWR, 0666);
+        posix_fallocate(fd, 0, end_offset * sizeof(uint32_t));
+        void* pmemaddr = mmap(nullptr, end_offset * sizeof(uint32_t),
+                              PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        uint32_t* ptr = static_cast<uint32_t*>(pmemaddr);
+        for (uint32_t j = 0; j < 10; j++)
+        {
+            for (uint32_t k = 0; k < PAGE_SIZE / 2; k++)
+            {
+                uint32_t cur_offset = j * PAGE_SIZE + k;
+                *(ptr + cur_offset) = cur_offset;
+            }
+        }
+        pmem_do_flush(ptr, end_offset * sizeof(uint32_t));
+        for (uint32_t j = 0; j < 10; j++)
+        {
+            for (uint32_t k = 0; k < PAGE_SIZE / 2; k++)
+            {
+                uint32_t cur_offset = j * PAGE_SIZE + k;
+                EXPECT_EQ(*(ptr + cur_offset), cur_offset);
+            }
+        }
+        munmap(pmemaddr, end_offset * sizeof(uint32_t));
+        close(fd);
+    }
+}
+
+TEST(pmem_utils, flush_test_partial_fork)
+{
+    uint32_t test_count = 100;
+    for (int i = 0; i < test_count; ++i)
+    {
+        temp_file file(get_temp_file_name("stack"));
+        uint32_t end_offset = (PAGE_SIZE * 10) + 10;
+        pid_t pid_id = fork();
+        if (pid_id == 0)
+        {
+            int fd = open(file.file_name.c_str(), O_CREAT | O_RDWR, 0666);
+            posix_fallocate(fd, 0, end_offset * sizeof(uint32_t));
+            void* pmemaddr = mmap(nullptr, end_offset * sizeof(uint32_t),
+                                  PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+            uint32_t* ptr = static_cast<uint32_t*>(pmemaddr);
+            for (uint32_t j = 0; j < 10; j++)
+            {
+                for (uint32_t k = 0; k < PAGE_SIZE / 2; k++)
+                {
+                    uint32_t cur_offset = j * PAGE_SIZE + k;
+                    *(ptr + cur_offset) = cur_offset;
+                }
+            }
+            pmem_do_flush(ptr, end_offset * sizeof(uint32_t));
+            exit(EXIT_SUCCESS);
+        }
+        else
+        {
+            int status = 0;
+            waitpid(pid_id, &status, 0);
+            int fd = open(file.file_name.c_str(), O_RDWR, 0666);
+            void* pmemaddr = mmap(nullptr, end_offset * sizeof(uint32_t),
+                                  PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+            uint32_t* ptr = static_cast<uint32_t*>(pmemaddr);
+            for (uint32_t j = 0; j < 10; j++)
+            {
+                for (uint32_t k = 0; k < PAGE_SIZE / 2; k++)
+                {
+                    uint32_t cur_offset = j * PAGE_SIZE + k;
+                    EXPECT_EQ(*(ptr + cur_offset), cur_offset);
+                }
             }
             munmap(pmemaddr, end_offset * sizeof(uint32_t));
             close(fd);
