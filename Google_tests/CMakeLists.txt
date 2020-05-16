@@ -15,6 +15,7 @@ add_executable(
         ../code/common/constants_and_types.cpp
         ../code/frame/stack_frame.cpp
         ../code/frame/positioned_frame.cpp
+        ../code/cas/cas.cpp
         blocking_queue/queue_test.cpp
         persistent_stack/test_persistent_stack.cpp
         common/test_utils.cpp

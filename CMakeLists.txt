@@ -18,6 +18,7 @@ add_executable(
         code/common/constants_and_types.cpp
         code/frame/stack_frame.cpp
         code/frame/positioned_frame.cpp
+        code/cas/cas.cpp
 )
 target_link_libraries(Diplom pmem pthread)
 add_subdirectory(Google_tests)
