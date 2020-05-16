@@ -69,6 +69,13 @@ namespace
         );
         throw std::runtime_error("system crash");
     }
+
+    void e(const uint8_t*)
+    {
+        std::vector<uint8_t> ans = read_answer(4);
+        EXPECT_EQ(ans, std::vector<uint8_t>({2, 5, 1, 7}));
+        throw std::runtime_error("system crash");
+    }
 }
 
 TEST(answer, return_value)
@@ -123,6 +130,28 @@ TEST(answer, fill_answer)
     try
     {
         do_call("c", std::vector<uint8_t>({1, 2, 3}));
+    } catch (...)
+    {}
+}
+
+TEST(answer, fill_default_answer)
+{
+    std::string file_name = get_temp_file_name("stack");
+    temp_file file(file_name);
+    global_storage<function_address_holder>::set_object(function_address_holder());
+    global_storage<function_address_holder>::get_object().funcs.clear();
+    global_storage<function_address_holder>::get_object().funcs["e"] = std::make_pair(e, e);
+    persistent_memory_holder p_stack(file.file_name, false, PMEM_STACK_SIZE);
+    thread_local_non_owning_storage<persistent_memory_holder>::ptr = &p_stack;
+    thread_local_owning_storage<ram_stack>::set_object(ram_stack());
+    try
+    {
+        do_call(
+                "e",
+                std::vector<uint8_t>({1, 2, 3}),
+                std::optional<std::vector<uint8_t>>(),
+                std::make_optional(std::vector<uint8_t>({2, 5, 1, 7}))
+        );
     } catch (...)
     {}
 }

@@ -90,7 +90,10 @@ ram_stack read_stack(const persistent_memory_holder& persistent_stack)
     }
 }
 
-void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_memory_holder& persistent_stack)
+void add_new_frame(ram_stack& stack,
+                   stack_frame const& frame,
+                   persistent_memory_holder& persistent_stack,
+                   std::optional<std::vector<uint8_t>> const& new_ans_filler)
 {
     uint8_t* const stack_mem = persistent_stack.get_pmem_ptr();
     /*
@@ -106,8 +109,27 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_memory
 
     uint64_t cur_offset = new_frame_offset;
 
+    if (new_ans_filler.has_value())
+    {
+        if (new_ans_filler->empty() || new_ans_filler->size() > 8)
+        {
+            throw std::runtime_error(
+                    "Cannot write answer of size " +
+                    std::to_string(new_ans_filler->size())
+            );
+        }
+        /*
+         * Write default answer
+         */
+        std::memcpy(
+                persistent_stack.get_pmem_ptr() + cur_offset,
+                new_ans_filler->data(),
+                new_ans_filler->size()
+        );
+    }
+
     /*
-     * Skip 8 bytes for answer, do not write anything
+     * Skip 8 bytes for answer
      */
     cur_offset += 8;
 
@@ -143,6 +165,14 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_memory
     const uint8_t stack_end_marker = 0x1;
     std::memcpy(stack_mem + cur_offset, &stack_end_marker, 1);
 
+    /*
+     * All new frame is flushed, even if new_ans_filler is empty.
+     * Beginning of the frame is aligned by cache line size
+     * (i.e. beginning of the frame + 8 is not aligned by cache line size).
+     * Therefore, it is useless to start flushing from beginning of the frame + 8, since
+     * flushing is done by cache lines and first 8 bytes of the frame will be
+     * flushed in all cases.
+     */
     pmem_do_flush(stack_mem + new_frame_offset, frame.size());
 
     if (stack_end != 0)
@@ -176,6 +206,7 @@ void remove_frame(ram_stack& stack, persistent_memory_holder& persistent_stack)
 void do_call(const std::string& function_name,
              const std::vector<uint8_t>& args,
              std::optional<std::vector<uint8_t>> const& ans_filler,
+             std::optional<std::vector<uint8_t>> const& new_ans_filler,
              bool call_recover)
 {
     ram_stack& r_stack = thread_local_owning_storage<ram_stack>::get_object();
@@ -194,7 +225,7 @@ void do_call(const std::string& function_name,
         std::memcpy(p_stack->get_pmem_ptr() + last_frame_offset, ans_filler->data(), ans_filler->size());
         pmem_do_flush(p_stack->get_pmem_ptr() + last_frame_offset, ans_filler->size());
     }
-    add_new_frame(r_stack, stack_frame(function_name, args), *p_stack);
+    add_new_frame(r_stack, stack_frame(function_name, args), *p_stack, new_ans_filler);
     function_ptr f_ptr;
     if (call_recover)
     {

@@ -23,13 +23,25 @@ ram_stack read_stack(const persistent_memory_holder& persistent_stack);
 
 /**
  * Adds new frame to the top of the stack. Frame is added to both
- * persistent and RAM stack.
+ * persistent and RAM stack. Can write new_ans_filler to the beginning of new frame.
+ * If new_ans_filler size is not between 1 and 8 bytes inclusively, std::runtime_error
+ * will be thrown. This parameter can be used to write some default value
+ * (that cannot be return value of the function) to a place, where
+ * answer will be stored.
  * @param stack - stack, that is stored in RAM. Should be representation
- * (i.e. contain the same data) as persistent stack.
+ *                (i.e. contain the same data) of persistent stack.
  * @param frame - frame to add to the top of the stack.
  * @param persistent_stack - stack, that is stored in file.
+ * @param new_ans_filler - if option contains value, it's value will be written to the beginning
+ *                         of new stack frame. Otherwise, won't be used.
+ * @throws std::runtime_error - if new_ans_filler size is not between 1 and 8 bytes inclusively.
  */
-void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_memory_holder& persistent_stack);
+void add_new_frame(
+        ram_stack& stack,
+        stack_frame const& frame,
+        persistent_memory_holder& persistent_stack,
+        std::optional<std::vector<uint8_t>> const& new_ans_filler = std::optional<std::vector<uint8_t>>()
+);
 
 /**
  * Removes single frame from the top of the stack. Frame is removed from both
@@ -42,7 +54,7 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_memory
  * system architecture, each worker thread should take and execute tasks from
  * tasks queue in an infinite loop, this limitation shouldn't be considered a drawback.
  * @param stack - stack, that is stored in RAM. Should be representation
- *                (i.e. contain the same data) as persistent stack.
+ *                (i.e. contain the same data) of persistent stack.
  * @param persistent_stack - stack, that is stored in file.
  * @throws std::runtime_error if the frame, that should be removed, is the only frame
  *                            in the stack.
@@ -70,10 +82,12 @@ void remove_frame(ram_stack& stack, persistent_memory_holder& persistent_stack);
  * is determined using global_storage<system_mode>). If system mode is not RECOVERY and
  * call_recover is true, std::runtime_error will be thrown.
  * Can write ans_filler to a memory, where function, that is being called, will write it's answer.
- * This memory is located in the current stack frame. If ans_filler size is not between
+ * This memory is located in the last stack frame. If ans_filler size is not between
  * 1 and 8 bytes inclusively, std::runtime_error will be thrown. This parameter can be used to
  * write some default value (that cannot be return value of the function) to a place, where
- * it's answer will be written.
+ * return value of the function, that is being called, will be written.
+ * Can write new_ans_filler to the beginning of new frame. If new_ans_filler size is not between 1 and 8
+ * bytes inclusively, std::runtime_error will be thrown.
  * Since first frame of the stack cannot be removed, main function of each thread should
  * NEVER return a value. Main function of each thread should wait in an infinite loop and
  * finish it's execution only by exception or system crash. But, since according to the
@@ -89,12 +103,14 @@ void remove_frame(ram_stack& stack, persistent_memory_holder& persistent_stack);
  * @param call_recover - specifies, which of the function should be called
  *                       (ordinary or recovery version).
  * @throws std::runtime_error - if ans_filler size is not between 1 and 8 bytes inclusively or
+ *                              if new_ans_filler size is not between 1 and 8 bytes inclusively or
  *                              if call_recover is true and system is not running in recovery mode.
  */
 void do_call(std::string const& function_name,
              std::vector<uint8_t> const& args,
              std::optional<std::vector<uint8_t>> const& ans_filler = std::optional<std::vector<uint8_t>>(),
-             bool call_recover = false); // TODO: fill answer on new snack frame with new_ans_filler
+             std::optional<std::vector<uint8_t>> const& new_ans_filler = std::optional<std::vector<uint8_t>>(),
+             bool call_recover = false);
 
 /**
  * Write answer of the function to persistent memory. Answer can be of any size between 1 and 8 bytes.
