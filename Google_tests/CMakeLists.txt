@@ -7,7 +7,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_executable(
         Google_Tests_run
-        ../code/persistent_stack/persistent_stack.cpp
+        ../code/persistent_stack/persistent_memory_holder.cpp
         ../code/persistent_stack/call.cpp
         ../code/persistent_stack/ram_stack.cpp
         ../code/common/pmem_utils.cpp
@@ -28,6 +28,6 @@ add_executable(
         storage/global_storage_test.cpp
         persistent_stack/answer_multithreading_test.cpp
         common/pmem_utils_test.cpp
-        cas/cas_test.cpp
+        cas/cas_internal_test.cpp
 )
 target_link_libraries(Google_Tests_run pmem gtest gtest_main)

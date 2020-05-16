@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "persistent_stack.h"
+#include "persistent_memory_holder.h"
 #include "../frame/positioned_frame.h"
 #include "../storage/thread_local_non_owning_storage.h"
 #include "../storage/thread_local_owning_storage.h"
@@ -19,7 +19,7 @@
  *                           in which persistent stack is stored.
  * @return representation of persistent stack, that is stored in RAM.
  */
-ram_stack read_stack(const persistent_stack& persistent_stack);
+ram_stack read_stack(const persistent_memory_holder& persistent_stack);
 
 /**
  * Adds new frame to the top of the stack. Frame is added to both
@@ -29,7 +29,7 @@ ram_stack read_stack(const persistent_stack& persistent_stack);
  * @param frame - frame to add to the top of the stack.
  * @param persistent_stack - stack, that is stored in file.
  */
-void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack& persistent_stack);
+void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_memory_holder& persistent_stack);
 
 /**
  * Removes single frame from the top of the stack. Frame is removed from both
@@ -47,7 +47,7 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
  * @throws std::runtime_error if the frame, that should be removed, is the only frame
  *                            in the stack.
  */
-void remove_frame(ram_stack& stack, persistent_stack& persistent_stack);
+void remove_frame(ram_stack& stack, persistent_memory_holder& persistent_stack);
 
 /**
  * Performs call of function with specified name and args. Performs sequence of actions:

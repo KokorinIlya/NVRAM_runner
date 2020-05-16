@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../../code/persistent_stack/persistent_stack.h"
+#include "../../code/persistent_stack/persistent_memory_holder.h"
 #include "../../code/persistent_stack/call.h"
 #include "../../code/storage/global_storage.h"
 #include "../common/test_utils.h"
@@ -81,8 +81,8 @@ TEST(answer, return_value)
     global_storage<function_address_holder>::get_object().funcs["g"] = std::make_pair(g, g);
     global_storage<function_address_holder>::get_object().funcs["h"] = std::make_pair(h, h);
     global_storage<function_address_holder>::get_object().funcs["l"] = std::make_pair(l, l);
-    persistent_stack p_stack(file.file_name, false);
-    thread_local_non_owning_storage<persistent_stack>::ptr = &p_stack;
+    persistent_memory_holder p_stack(file.file_name, false, PMEM_STACK_SIZE);
+    thread_local_non_owning_storage<persistent_memory_holder>::ptr = &p_stack;
     thread_local_owning_storage<ram_stack>::set_object(ram_stack());
     try
     {
@@ -99,8 +99,8 @@ TEST(answer, read_own_value)
     global_storage<function_address_holder>::get_object().funcs.clear();
     global_storage<function_address_holder>::get_object().funcs["b"] = std::make_pair(b, b);
     global_storage<function_address_holder>::get_object().funcs["a"] = std::make_pair(a, a);
-    persistent_stack p_stack(file.file_name, false);
-    thread_local_non_owning_storage<persistent_stack>::ptr = &p_stack;
+    persistent_memory_holder p_stack(file.file_name, false, PMEM_STACK_SIZE);
+    thread_local_non_owning_storage<persistent_memory_holder>::ptr = &p_stack;
     thread_local_owning_storage<ram_stack>::set_object(ram_stack());
     try
     {
@@ -117,8 +117,8 @@ TEST(answer, fill_answer)
     global_storage<function_address_holder>::get_object().funcs.clear();
     global_storage<function_address_holder>::get_object().funcs["c"] = std::make_pair(c, c);
     global_storage<function_address_holder>::get_object().funcs["d"] = std::make_pair(d, d);
-    persistent_stack p_stack(file.file_name, false);
-    thread_local_non_owning_storage<persistent_stack>::ptr = &p_stack;
+    persistent_memory_holder p_stack(file.file_name, false, PMEM_STACK_SIZE);
+    thread_local_non_owning_storage<persistent_memory_holder>::ptr = &p_stack;
     thread_local_owning_storage<ram_stack>::set_object(ram_stack());
     try
     {

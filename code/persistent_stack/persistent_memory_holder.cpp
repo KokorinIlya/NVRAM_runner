@@ -1,4 +1,4 @@
-#include "persistent_stack.h"
+#include "persistent_memory_holder.h"
 #include <fcntl.h>
 #include <stdexcept>
 #include <sys/mman.h>
@@ -8,10 +8,11 @@
 #include <cstdio>
 #include <unistd.h>
 
-persistent_stack::persistent_stack(std::string stack_file_name, bool open_existing)
+persistent_memory_holder::persistent_memory_holder(std::string _file_name, bool open_existing, uint64_t _size)
         : fd(-1),
-          stack_ptr(nullptr),
-          file_name(std::move(stack_file_name))
+          pmem_ptr(nullptr),
+          file_name(std::move(_file_name)),
+          size(_size)
 {
     if (!open_existing)
     {
@@ -22,7 +23,7 @@ persistent_stack::persistent_stack(std::string stack_file_name, bool open_existi
             throw std::runtime_error("Error while opening file " + file_name);
         }
 
-        if (posix_fallocate(fd, 0, PMEM_STACK_SIZE) != 0)
+        if (posix_fallocate(fd, 0, size) != 0)
         {
             if (close(fd) == -1)
             {
@@ -48,7 +49,7 @@ persistent_stack::persistent_stack(std::string stack_file_name, bool open_existi
         }
     }
 
-    void* pmemaddr = mmap(nullptr, PMEM_STACK_SIZE,
+    void* pmemaddr = mmap(nullptr, size,
                           PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (pmemaddr == nullptr)
@@ -66,20 +67,20 @@ persistent_stack::persistent_stack(std::string stack_file_name, bool open_existi
             throw std::runtime_error(error_text);
         }
     }
-    stack_ptr = static_cast<uint8_t*>(pmemaddr);
+    pmem_ptr = static_cast<uint8_t*>(pmemaddr);
     if ((uint64_t) pmemaddr % PAGE_SIZE != 0)
     {
         std::string err_msg = "Return value of mmap = " + std::to_string((uint64_t) pmemaddr) +
-                              "but page size = " + std::to_string(PAGE_SIZE);
+                              "but page _size = " + std::to_string(PAGE_SIZE);
         std::cerr << err_msg << std::endl;
     }
 }
 
-persistent_stack::~persistent_stack()
+persistent_memory_holder::~persistent_memory_holder()
 {
-    if (fd != -1 && stack_ptr != nullptr)
+    if (fd != -1 && pmem_ptr != nullptr)
     {
-        if (munmap(stack_ptr, PMEM_STACK_SIZE) == -1)
+        if (munmap(pmem_ptr, size) == -1)
         {
             std::cerr << "Error while munmap file " << file_name << std::endl;
         }
@@ -90,19 +91,19 @@ persistent_stack::~persistent_stack()
     }
 }
 
-const uint8_t* persistent_stack::get_stack_ptr() const
+const uint8_t* persistent_memory_holder::get_pmem_ptr() const
 {
-    return stack_ptr;
+    return pmem_ptr;
 }
 
-uint8_t* persistent_stack::get_stack_ptr()
+uint8_t* persistent_memory_holder::get_pmem_ptr()
 {
-    return stack_ptr;
+    return pmem_ptr;
 }
 
-persistent_stack::persistent_stack(persistent_stack&& other) noexcept
-        : fd(other.fd), stack_ptr(other.stack_ptr), file_name(std::move(other.file_name))
+persistent_memory_holder::persistent_memory_holder(persistent_memory_holder&& other) noexcept
+        : fd(other.fd), pmem_ptr(other.pmem_ptr), file_name(std::move(other.file_name)), size(other.size)
 {
     other.fd = -1;
-    other.stack_ptr = nullptr;
+    other.pmem_ptr = nullptr;
 }

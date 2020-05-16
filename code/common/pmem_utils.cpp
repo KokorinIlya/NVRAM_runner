@@ -2,7 +2,7 @@
 #include <libpmem.h>
 #include <cassert>
 #include "../storage/thread_local_non_owning_storage.h"
-#include "../persistent_stack/persistent_stack.h"
+#include "../persistent_stack/persistent_memory_holder.h"
 
 // TODO: remove dependency from PMDK using msync(2)
 void pmem_do_flush(const void* ptr, size_t len)
@@ -35,6 +35,6 @@ uint64_t get_cache_line_aligned_address(uint64_t address)
 
 bool is_stack_address(const uint8_t* address)
 {
-    const uint8_t* const stack_begin_address = thread_local_non_owning_storage<persistent_stack>::ptr->get_stack_ptr();
+    const uint8_t* const stack_begin_address = thread_local_non_owning_storage<persistent_memory_holder>::ptr->get_pmem_ptr();
     return address >= stack_begin_address && address < stack_begin_address + PMEM_STACK_SIZE;
 }

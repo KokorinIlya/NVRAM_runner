@@ -3,7 +3,7 @@
 #include <random>
 #include <chrono>
 #include "test_utils.h"
-#include "../../code/persistent_stack/persistent_stack.h"
+#include "../../code/persistent_stack/persistent_memory_holder.h"
 #include "../../code/storage/thread_local_non_owning_storage.h"
 #include <thread>
 #include <functional>
@@ -52,19 +52,19 @@ TEST(pmem_utils, align_idempotency)
 TEST(pmem_utils, address_in_stack_simple_test)
 {
     temp_file file(get_temp_file_name("stack"));
-    persistent_stack p_stack(file.file_name, false);
-    thread_local_non_owning_storage<persistent_stack>::ptr = &p_stack;
+    persistent_memory_holder p_stack(file.file_name, false, PMEM_STACK_SIZE);
+    thread_local_non_owning_storage<persistent_memory_holder>::ptr = &p_stack;
     for (uint32_t i = 1; i < 100; i++)
     {
-        EXPECT_FALSE(is_stack_address(p_stack.get_stack_ptr() - i));
+        EXPECT_FALSE(is_stack_address(p_stack.get_pmem_ptr() - i));
     }
     for (uint32_t i = 0; i < PMEM_STACK_SIZE; i++)
     {
-        EXPECT_TRUE(is_stack_address(p_stack.get_stack_ptr() + i));
+        EXPECT_TRUE(is_stack_address(p_stack.get_pmem_ptr() + i));
     }
     for (uint32_t i = 0; i < 100; i++)
     {
-        EXPECT_FALSE(is_stack_address(p_stack.get_stack_ptr() + PMEM_STACK_SIZE + i));
+        EXPECT_FALSE(is_stack_address(p_stack.get_pmem_ptr() + PMEM_STACK_SIZE + i));
     }
 }
 
@@ -72,31 +72,31 @@ TEST(pmem_utils, address_in_stack_multithreading_test)
 {
     uint32_t number_of_threads = 4;
     std::vector<temp_file> files;
-    std::vector<persistent_stack> stacks;
+    std::vector<persistent_memory_holder> stacks;
     for (uint32_t i = 0; i < number_of_threads; i++)
     {
         std::string file_name = get_temp_file_name("stack");
         files.emplace_back(file_name);
-        stacks.emplace_back(file_name, false);
+        stacks.emplace_back(file_name, false, PMEM_STACK_SIZE);
     }
     std::vector<std::thread> threads;
     for (uint32_t i = 0; i < number_of_threads; i++)
     {
         std::function<void()> thread_action = [i, &stacks]()
         {
-            thread_local_non_owning_storage<persistent_stack>::ptr = &stacks[i];
+            thread_local_non_owning_storage<persistent_memory_holder>::ptr = &stacks[i];
             for (uint32_t j = 1; j < 100; j++)
             {
-                EXPECT_FALSE(is_stack_address(stacks[i].get_stack_ptr() - j));
+                EXPECT_FALSE(is_stack_address(stacks[i].get_pmem_ptr() - j));
             }
             for (uint32_t j = 0; j < PMEM_STACK_SIZE; j++)
             {
-                EXPECT_TRUE(is_stack_address(stacks[i].get_stack_ptr() + j));
+                EXPECT_TRUE(is_stack_address(stacks[i].get_pmem_ptr() + j));
             }
             for (uint32_t j = 0; j < 100; j++)
             {
                 EXPECT_FALSE(
-                        is_stack_address(stacks[i].get_stack_ptr() + PMEM_STACK_SIZE + j)
+                        is_stack_address(stacks[i].get_pmem_ptr() + PMEM_STACK_SIZE + j)
                 );
             }
         };

@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../../code/persistent_stack/persistent_stack.h"
+#include "../../code/persistent_stack/persistent_memory_holder.h"
 #include "../../code/persistent_stack/call.h"
 #include "../../code/storage/global_storage.h"
 #include "../common/test_utils.h"
@@ -63,10 +63,10 @@ TEST(call_multithreading, restoration_after_crash)
         global_storage<function_address_holder>::get_object().funcs["g_1"] = std::make_pair(g_1, g_1);
         global_storage<function_address_holder>::get_object().funcs["h_1"] = std::make_pair(h_1, h_1);
 
-        std::vector<persistent_stack> stacks;
+        std::vector<persistent_memory_holder> stacks;
         for (uint32_t i = 0; i < number_of_threads; ++i)
         {
-            stacks.emplace_back(temp_files[i].file_name, false);
+            stacks.emplace_back(temp_files[i].file_name, false, PMEM_STACK_SIZE);
         }
         std::vector<std::thread> threads;
         for (uint32_t i = 0; i < number_of_threads; ++i)
@@ -75,7 +75,7 @@ TEST(call_multithreading, restoration_after_crash)
             {
                 uint8_t small_i = static_cast<uint8_t>(i);
                 thread_local_owning_storage<ram_stack>::set_object(ram_stack());
-                thread_local_non_owning_storage<persistent_stack>::ptr = &stacks[i];
+                thread_local_non_owning_storage<persistent_memory_holder>::ptr = &stacks[i];
                 try
                 {
                     do_call(
@@ -96,10 +96,10 @@ TEST(call_multithreading, restoration_after_crash)
 
     std::function<void()> restoration = [number_of_threads, &temp_files]()
     {
-        std::vector<persistent_stack> stacks;
+        std::vector<persistent_memory_holder> stacks;
         for (uint32_t i = 0; i < number_of_threads; ++i)
         {
-            stacks.emplace_back(temp_files[i].file_name, true);
+            stacks.emplace_back(temp_files[i].file_name, true, PMEM_STACK_SIZE);
         }
         std::vector<std::thread> threads;
         for (uint32_t i = 0; i < number_of_threads; ++i)
@@ -107,10 +107,10 @@ TEST(call_multithreading, restoration_after_crash)
             std::function<void()> thread_action = [&stacks, i]()
             {
                 uint8_t small_i = static_cast<uint8_t>(i);
-                thread_local_non_owning_storage<persistent_stack>::ptr =
+                thread_local_non_owning_storage<persistent_memory_holder>::ptr =
                         &stacks[i];
                 thread_local_owning_storage<ram_stack>::set_object(
-                        read_stack(*thread_local_non_owning_storage<persistent_stack>::ptr)
+                        read_stack(*thread_local_non_owning_storage<persistent_memory_holder>::ptr)
                 );
                 ram_stack& r_stack = thread_local_owning_storage<ram_stack>::get_object();
                 EXPECT_EQ(r_stack.size(), 2);

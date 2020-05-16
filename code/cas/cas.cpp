@@ -161,10 +161,50 @@ bool cas_recover_internal(uint64_t* var,
 
 void cas(const uint8_t* args)
 {
+    uint64_t cur_offset = 0;
 
+    uint64_t var_offset;
+    std::memcpy(&var_offset, args + cur_offset, 8);
+    cur_offset += 8;
+
+    uint32_t expected_value;
+    std::memcpy(&expected_value, args + cur_offset, 4);
+    cur_offset += 4;
+
+    uint32_t new_value;
+    std::memcpy(&new_value, args + cur_offset, 4);
+    cur_offset += 4;
+
+    /*
+     * TODO: get beginning of pmem and total thread numbers from global storage,
+     * cur thread number for thread local non owning storage
+     */
+
+    uint64_t thread_matrix_offset;
+    std::memcpy(&thread_matrix_offset, args + cur_offset, 8);
 }
 
 void cas_recover(const uint8_t* args)
 {
+    uint64_t cur_offset = 0;
 
+    uint64_t var_offset;
+    std::memcpy(&var_offset, args + cur_offset, 8);
+    cur_offset += 8;
+
+    uint32_t expected_value;
+    std::memcpy(&expected_value, args + cur_offset, 4);
+    cur_offset += 4;
+
+    uint32_t new_value;
+    std::memcpy(&new_value, args + cur_offset, 4);
+    cur_offset += 4;
+
+    /*
+     * TODO: get beginning of pmem and total thread numbers from global storage,
+     * cur thread number for thread local non owning storage
+     */
+
+    uint64_t thread_matrix_offset;
+    std::memcpy(&thread_matrix_offset, args + cur_offset, 8);
 }

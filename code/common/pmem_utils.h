@@ -33,7 +33,7 @@ uint64_t get_cache_line_aligned_address(uint64_t address);
 /**
  * Returns true if address is part of caller threads's persistent stack and false otherwise.
  * If caller thread doesn't have persistent stack
- * (i.e. thread_local_non_owning_storage<persistent_stack> hasn't been set) std::runtime_error
+ * (i.e. thread_local_non_owning_storage<persistent_memory_holder> hasn't been set) std::runtime_error
  * is thrown.
  * @param address - address.
  * @return true if address is part of caller threads's persistent stack and false otherwise

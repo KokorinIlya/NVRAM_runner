@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../../code/persistent_stack/persistent_stack.h"
+#include "../../code/persistent_stack/persistent_memory_holder.h"
 #include "../../code/persistent_stack/call.h"
 #include "../../code/storage/global_storage.h"
 #include "../common/test_utils.h"
@@ -159,10 +159,10 @@ TEST(answer_multithreading, return_value)
     global_storage<function_address_holder>::get_object().funcs["h_1"] = std::make_pair(h_1, h_1);
     global_storage<function_address_holder>::get_object().funcs["l_1"] = std::make_pair(l_1, l_1);
 
-    std::vector<persistent_stack> stacks;
+    std::vector<persistent_memory_holder> stacks;
     for (uint32_t i = 0; i < number_of_threads; ++i)
     {
-        stacks.emplace_back(temp_files[i].file_name, false);
+        stacks.emplace_back(temp_files[i].file_name, false, PMEM_STACK_SIZE);
     }
     std::vector<std::thread> threads;
     for (uint32_t i = 0; i < number_of_threads; ++i)
@@ -171,7 +171,7 @@ TEST(answer_multithreading, return_value)
         {
             uint8_t small_i = static_cast<uint8_t>(i);
             thread_local_owning_storage<ram_stack>::set_object(ram_stack());
-            thread_local_non_owning_storage<persistent_stack>::ptr = &stacks[i];
+            thread_local_non_owning_storage<persistent_memory_holder>::ptr = &stacks[i];
             try
             {
                 do_call(
@@ -208,10 +208,10 @@ TEST(answer_multithreading, read_own_value)
     global_storage<function_address_holder>::get_object().funcs["a_1"] = std::make_pair(a_1, a_1);
     global_storage<function_address_holder>::get_object().funcs["b_1"] = std::make_pair(b_1, b_1);
 
-    std::vector<persistent_stack> stacks;
+    std::vector<persistent_memory_holder> stacks;
     for (uint32_t i = 0; i < number_of_threads; ++i)
     {
-        stacks.emplace_back(temp_files[i].file_name, false);
+        stacks.emplace_back(temp_files[i].file_name, false, PMEM_STACK_SIZE);
     }
     std::vector<std::thread> threads;
     for (uint32_t i = 0; i < number_of_threads; ++i)
@@ -220,7 +220,7 @@ TEST(answer_multithreading, read_own_value)
         {
             uint8_t small_i = static_cast<uint8_t>(i);
             thread_local_owning_storage<ram_stack>::set_object(ram_stack());
-            thread_local_non_owning_storage<persistent_stack>::ptr = &stacks[i];
+            thread_local_non_owning_storage<persistent_memory_holder>::ptr = &stacks[i];
             try
             {
                 do_call(
@@ -257,10 +257,10 @@ TEST(answer_multithreading, fill_answer)
     global_storage<function_address_holder>::get_object().funcs["c_1"] = std::make_pair(c_1, c_1);
     global_storage<function_address_holder>::get_object().funcs["d_1"] = std::make_pair(d_1, d_1);
 
-    std::vector<persistent_stack> stacks;
+    std::vector<persistent_memory_holder> stacks;
     for (uint32_t i = 0; i < number_of_threads; ++i)
     {
-        stacks.emplace_back(temp_files[i].file_name, false);
+        stacks.emplace_back(temp_files[i].file_name, false, PMEM_STACK_SIZE);
     }
     std::vector<std::thread> threads;
     for (uint32_t i = 0; i < number_of_threads; ++i)
@@ -269,7 +269,7 @@ TEST(answer_multithreading, fill_answer)
         {
             uint8_t small_i = static_cast<uint8_t>(i);
             thread_local_owning_storage<ram_stack>::set_object(ram_stack());
-            thread_local_non_owning_storage<persistent_stack>::ptr = &stacks[i];
+            thread_local_non_owning_storage<persistent_memory_holder>::ptr = &stacks[i];
             try
             {
                 do_call(

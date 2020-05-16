@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../../code/persistent_stack/persistent_stack.h"
+#include "../../code/persistent_stack/persistent_memory_holder.h"
 #include "../../code/persistent_stack/call.h"
 #include "../../code/storage/global_storage.h"
 #include "../common/test_utils.h"
@@ -34,8 +34,8 @@ TEST(call, restoration_after_crash)
         global_storage<function_address_holder>::get_object().funcs["f"] = std::make_pair(f, f);
         global_storage<function_address_holder>::get_object().funcs["g"] = std::make_pair(g, g);
         global_storage<function_address_holder>::get_object().funcs["h"] = std::make_pair(h, h);
-        persistent_stack p_stack(file.file_name, false);
-        thread_local_non_owning_storage<persistent_stack>::ptr = &p_stack;
+        persistent_memory_holder p_stack(file.file_name, false, PMEM_STACK_SIZE);
+        thread_local_non_owning_storage<persistent_memory_holder>::ptr = &p_stack;
         thread_local_owning_storage<ram_stack>::set_object(ram_stack());
         do_call("f", std::vector<uint8_t>({1, 2, 3}));
     };
@@ -50,8 +50,8 @@ TEST(call, restoration_after_crash)
 
     std::function<void()> restoration = [&file]()
     {
-        persistent_stack p_stack(file.file_name, true);
-        thread_local_non_owning_storage<persistent_stack>::ptr = &p_stack;
+        persistent_memory_holder p_stack(file.file_name, true, PMEM_STACK_SIZE);
+        thread_local_non_owning_storage<persistent_memory_holder>::ptr = &p_stack;
         ram_stack r_stack = read_stack(p_stack);
         thread_local_owning_storage<ram_stack>::set_object(r_stack);
         EXPECT_EQ(r_stack.size(), 2);

@@ -52,11 +52,11 @@ std::pair<stack_frame, bool> read_frame(const uint8_t* const stack_ptr, const ui
     return std::make_pair(stack_frame(function_name, args), is_last);
 }
 
-ram_stack read_stack(const persistent_stack& persistent_stack)
+ram_stack read_stack(const persistent_memory_holder& persistent_stack)
 {
     ram_stack stack;
     uint64_t cur_offset = 0;
-    const uint8_t* const stack_mem = persistent_stack.get_stack_ptr();
+    const uint8_t* const stack_mem = persistent_stack.get_pmem_ptr();
 
     while (true)
     {
@@ -80,9 +80,9 @@ ram_stack read_stack(const persistent_stack& persistent_stack)
     }
 }
 
-void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack& persistent_stack)
+void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_memory_holder& persistent_stack)
 {
-    uint8_t* const stack_mem = persistent_stack.get_stack_ptr();
+    uint8_t* const stack_mem = persistent_stack.get_pmem_ptr();
     /*
      * First free byte of the stack
      */
@@ -146,13 +146,13 @@ void add_new_frame(ram_stack& stack, stack_frame const& frame, persistent_stack&
     }
 }
 
-void remove_frame(ram_stack& stack, persistent_stack& persistent_stack)
+void remove_frame(ram_stack& stack, persistent_memory_holder& persistent_stack)
 {
     if (stack.size() == 1)
     {
         throw std::runtime_error("Cannot remove first frame of the stack");
     }
-    uint8_t* const stack_mem = persistent_stack.get_stack_ptr();
+    uint8_t* const stack_mem = persistent_stack.get_pmem_ptr();
     stack.remove_frame();
     /*
      * Stack end marker is just before first free byte of the stack
@@ -169,7 +169,7 @@ void do_call(const std::string& function_name,
              bool call_recover)
 {
     ram_stack& r_stack = thread_local_owning_storage<ram_stack>::get_object();
-    persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
+    persistent_memory_holder* p_stack = thread_local_non_owning_storage<persistent_memory_holder>::ptr;
     if (ans_filler.has_value())
     {
         if (ans_filler->empty() || ans_filler->size() > 8)
@@ -181,10 +181,10 @@ void do_call(const std::string& function_name,
         }
         const uint64_t last_frame_offset = r_stack.get_last_frame().get_position();
         assert(last_frame_offset % CACHE_LINE_SIZE == 0);
-        std::memcpy(p_stack->get_stack_ptr() + last_frame_offset, ans_filler->data(), ans_filler->size());
-        pmem_do_flush(p_stack->get_stack_ptr() + last_frame_offset, ans_filler->size());
+        std::memcpy(p_stack->get_pmem_ptr() + last_frame_offset, ans_filler->data(), ans_filler->size());
+        pmem_do_flush(p_stack->get_pmem_ptr() + last_frame_offset, ans_filler->size());
     }
-    add_new_frame(r_stack, stack_frame{function_name, args}, *p_stack);
+    add_new_frame(r_stack, stack_frame(function_name, args), *p_stack);
     function_ptr f_ptr;
     if (call_recover)
     {
@@ -212,15 +212,15 @@ void write_answer(std::vector<uint8_t> const& answer)
         throw std::runtime_error("Cannot write answer of size " + std::to_string(answer.size()));
     }
     ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
-    persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
+    persistent_memory_holder* p_stack = thread_local_non_owning_storage<persistent_memory_holder>::ptr;
     if (r_stack.size() == 1)
     {
         throw std::runtime_error("Cannot return value from the first frame");
     }
     const uint64_t answer_offset = r_stack.get_answer_position();
     assert(answer_offset % CACHE_LINE_SIZE == 0);
-    std::memcpy(p_stack->get_stack_ptr() + answer_offset, answer.data(), answer.size());
-    pmem_do_flush(p_stack->get_stack_ptr() + answer_offset, answer.size());
+    std::memcpy(p_stack->get_pmem_ptr() + answer_offset, answer.data(), answer.size());
+    pmem_do_flush(p_stack->get_pmem_ptr() + answer_offset, answer.size());
 }
 
 std::vector<uint8_t> read_answer(uint8_t size)
@@ -230,7 +230,7 @@ std::vector<uint8_t> read_answer(uint8_t size)
         throw std::runtime_error("Cannot read answer of size " + std::to_string(size));
     }
     ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
-    persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
+    persistent_memory_holder* p_stack = thread_local_non_owning_storage<persistent_memory_holder>::ptr;
     /*
      * Function writes answer to the beginning of the previous frame.
      * First 8 bytes of previous frame can hold answer.
@@ -238,7 +238,7 @@ std::vector<uint8_t> read_answer(uint8_t size)
     const uint64_t answer_offset = r_stack.get_last_frame().get_position();
     assert(answer_offset % CACHE_LINE_SIZE == 0);
     std::vector<uint8_t> answer(size);
-    std::memcpy(answer.data(), p_stack->get_stack_ptr() + answer_offset, size);
+    std::memcpy(answer.data(), p_stack->get_pmem_ptr() + answer_offset, size);
     return answer;
 }
 
@@ -249,7 +249,7 @@ std::vector<uint8_t> read_current_answer(uint8_t size)
         throw std::runtime_error("Cannot read answer of size " + std::to_string(size));
     }
     ram_stack const& r_stack = thread_local_owning_storage<ram_stack>::get_const_object();
-    persistent_stack* p_stack = thread_local_non_owning_storage<persistent_stack>::ptr;
+    persistent_memory_holder* p_stack = thread_local_non_owning_storage<persistent_memory_holder>::ptr;
     if (r_stack.size() == 1)
     {
         throw std::runtime_error("Cannot return value from the first frame");
@@ -257,6 +257,6 @@ std::vector<uint8_t> read_current_answer(uint8_t size)
     const uint64_t answer_offset = r_stack.get_answer_position();
     assert(answer_offset % CACHE_LINE_SIZE == 0);
     std::vector<uint8_t> answer(size);
-    std::memcpy(answer.data(), p_stack->get_stack_ptr() + answer_offset, size);
+    std::memcpy(answer.data(), p_stack->get_pmem_ptr() + answer_offset, size);
     return answer;
 }

@@ -1,13 +1,14 @@
-#include "../../code/persistent_stack/persistent_stack.h"
+#include "../../code/persistent_stack/persistent_memory_holder.h"
 #include "../../code/persistent_stack/call.h"
 #include "gtest/gtest.h"
 #include "../common/test_utils.h"
+#include "../../code/common/constants_and_types.h"
 
 TEST(persistent_stack, add_frame)
 {
     temp_file file(get_temp_file_name("stack"));
 
-    persistent_stack p_stack(file.file_name, false);
+    persistent_memory_holder p_stack(file.file_name, false, PMEM_STACK_SIZE);
     ram_stack r_stack;
     stack_frame frame_1 = stack_frame
             {
@@ -27,7 +28,7 @@ TEST(persistent_stack, add_multiple_frames)
 {
     temp_file file(get_temp_file_name("stack"));
 
-    persistent_stack p_stack(file.file_name, false);
+    persistent_memory_holder p_stack(file.file_name, false, PMEM_STACK_SIZE);
     ram_stack r_stack;
     stack_frame frame_1 = stack_frame
             {
@@ -71,7 +72,7 @@ TEST(persistent_stack, add_multiple_frames_remove_single_frame)
 {
     temp_file file(get_temp_file_name("stack"));
 
-    persistent_stack p_stack(file.file_name, false);
+    persistent_memory_holder p_stack(file.file_name, false, PMEM_STACK_SIZE);
     ram_stack r_stack;
     stack_frame frame_1 = stack_frame
             {
@@ -111,7 +112,7 @@ TEST(persistent_stack, add_and_remove_multiple_frames)
 {
     temp_file file(get_temp_file_name("stack"));
 
-    persistent_stack p_stack(file.file_name, false);
+    persistent_memory_holder p_stack(file.file_name, false, PMEM_STACK_SIZE);
     ram_stack r_stack;
     stack_frame frame_1 = stack_frame
             {
