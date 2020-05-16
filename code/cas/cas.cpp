@@ -193,7 +193,7 @@ void cas_common(const uint8_t* args, bool call_recover)
     std::memcpy(&thread_matrix_offset, args + cur_offset, 8);
 
     /*
-     * TODO: get total thread numbers from global storage, cur thread number from thread local non owning storage
+     * TODO: get total thread numbers from global storage, cur thread number from thread local storage
      */
 
     uint8_t* pmem_start_address = global_storage<persistent_memory_holder>::get_object().get_pmem_ptr();
