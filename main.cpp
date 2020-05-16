@@ -28,7 +28,6 @@ int main(int argc, char** argv)
     uint64_t* var = (uint64_t*) stack_ptr;
     uint32_t thread_number = 4;
     uint32_t* thread_matrix = (uint32_t*) stack_ptr + 8;
-    uint8_t* answer = (uint8_t*) stack_ptr + 8 + 4 * thread_number * thread_number;
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -40,8 +39,8 @@ int main(int argc, char** argv)
     std::memcpy(var, &initial_thread_number_and_initial_value, 8);
     pmem_do_flush(var, 8);
 
-    cas_internal(var, 42, 24, 1, 4, thread_matrix, answer);
-    std::cout << (int) *answer << std::endl;
+    bool result = cas_internal(var, 42, 24, 1, thread_number, thread_matrix);
+    std::cout << (int) result << std::endl;
 
     if (munmap(pmemaddr, PMEM_STACK_SIZE) < 0)
     {
