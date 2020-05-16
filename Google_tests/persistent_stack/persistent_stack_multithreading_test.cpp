@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include <thread>
-#include "../../code/persistent_stack/persistent_memory_holder.h"
+#include "../../code/persistent_memory/persistent_memory_holder.h"
 #include "../../code/persistent_stack/call.h"
 #include "../common/test_utils.h"
 #include "../../code/common/constants_and_types.h"

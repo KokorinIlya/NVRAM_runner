@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "../../code/persistent_stack/persistent_memory_holder.h"
+#include "../../code/persistent_memory/persistent_memory_holder.h"
 #include "../../code/persistent_stack/call.h"
 #include "../../code/storage/global_storage.h"
 #include "../common/test_utils.h"

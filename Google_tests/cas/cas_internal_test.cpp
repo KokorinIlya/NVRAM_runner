@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <limits>
+#include "../../code/persistent_memory/persistent_memory_holder.h"
 
 TEST(cas, single_successful)
 {

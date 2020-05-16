@@ -3,6 +3,8 @@
 #include <cstring>
 #include "../common/pmem_utils.h"
 #include <cassert>
+#include "../storage/global_storage.h"
+#include "../persistent_memory/persistent_memory_holder.h"
 
 bool cas_internal(uint64_t* var,
                   uint32_t expected_value,
@@ -159,52 +161,52 @@ bool cas_recover_internal(uint64_t* var,
     return cas_internal(var, expected_value, new_value, cur_thread_number, total_thread_number, thread_matrix);
 }
 
-void cas(const uint8_t* args)
+void cas_common(const uint8_t* args, bool call_recover)
 {
     uint64_t cur_offset = 0;
 
+    /*
+     * Read 8 bytes of variable address
+     */
     uint64_t var_offset;
     std::memcpy(&var_offset, args + cur_offset, 8);
     cur_offset += 8;
 
+    /*
+     * Read 4 bytes of expected value
+     */
     uint32_t expected_value;
     std::memcpy(&expected_value, args + cur_offset, 4);
     cur_offset += 4;
 
+    /*
+     * Read 4 bytes of new value
+     */
     uint32_t new_value;
     std::memcpy(&new_value, args + cur_offset, 4);
     cur_offset += 4;
 
     /*
-     * TODO: get beginning of pmem and total thread numbers from global storage,
-     * cur thread number for thread local non owning storage
+     * Read 8 bytes of matrix address
      */
-
     uint64_t thread_matrix_offset;
     std::memcpy(&thread_matrix_offset, args + cur_offset, 8);
+
+    /*
+     * TODO: get total thread numbers from global storage, cur thread number from thread local non owning storage
+     */
+
+    uint8_t* pmem_start_address = global_storage<persistent_memory_holder>::get_object().get_pmem_ptr();
+    uint64_t* var = (uint64_t*) pmem_start_address + var_offset;
+    uint32_t* thread_matrix = (uint32_t*) pmem_start_address + thread_matrix_offset;
+}
+
+void cas(const uint8_t* args)
+{
+    cas_common(args, false);
 }
 
 void cas_recover(const uint8_t* args)
 {
-    uint64_t cur_offset = 0;
-
-    uint64_t var_offset;
-    std::memcpy(&var_offset, args + cur_offset, 8);
-    cur_offset += 8;
-
-    uint32_t expected_value;
-    std::memcpy(&expected_value, args + cur_offset, 4);
-    cur_offset += 4;
-
-    uint32_t new_value;
-    std::memcpy(&new_value, args + cur_offset, 4);
-    cur_offset += 4;
-
-    /*
-     * TODO: get beginning of pmem and total thread numbers from global storage,
-     * cur thread number for thread local non owning storage
-     */
-
-    uint64_t thread_matrix_offset;
-    std::memcpy(&thread_matrix_offset, args + cur_offset, 8);
+    cas_common(args, true);
 }

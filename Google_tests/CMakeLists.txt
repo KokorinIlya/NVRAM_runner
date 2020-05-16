@@ -7,7 +7,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 add_executable(
         Google_Tests_run
-        ../code/persistent_stack/persistent_memory_holder.cpp
+        ../code/persistent_memory/persistent_memory_holder.cpp
         ../code/persistent_stack/call.cpp
         ../code/persistent_stack/ram_stack.cpp
         ../code/common/pmem_utils.cpp

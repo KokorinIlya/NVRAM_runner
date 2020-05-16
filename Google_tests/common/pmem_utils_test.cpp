@@ -3,7 +3,7 @@
 #include <random>
 #include <chrono>
 #include "test_utils.h"
-#include "../../code/persistent_stack/persistent_memory_holder.h"
+#include "../../code/persistent_memory/persistent_memory_holder.h"
 #include "../../code/storage/thread_local_non_owning_storage.h"
 #include <thread>
 #include <functional>

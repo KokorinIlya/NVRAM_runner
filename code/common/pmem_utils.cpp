@@ -2,7 +2,7 @@
 #include <libpmem.h>
 #include <cassert>
 #include "../storage/thread_local_non_owning_storage.h"
-#include "../persistent_stack/persistent_memory_holder.h"
+#include "../persistent_memory/persistent_memory_holder.h"
 
 // TODO: remove dependency from PMDK using msync(2)
 void pmem_do_flush(const void* ptr, size_t len)
