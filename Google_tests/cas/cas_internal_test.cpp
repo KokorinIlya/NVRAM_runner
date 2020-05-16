@@ -13,24 +13,10 @@
 TEST(cas, single_successful)
 {
     temp_file file(get_temp_file_name("heap"));
-    int fd = open(file.file_name.c_str(), O_CREAT | O_RDWR, 0666);
-    if (fd < 0)
-    {
-        perror("open");
-        exit(EXIT_FAILURE);
-    }
-    if (posix_fallocate(fd, 0, PMEM_HEAP_SIZE) != 0)
-    {
-        perror("allocate");
-        exit(EXIT_FAILURE);
-    }
-    void* pmemaddr = mmap(nullptr, PMEM_HEAP_SIZE,
-                          PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-    uint8_t* stack_ptr = static_cast<uint8_t*>(pmemaddr);
-    uint64_t* var = (uint64_t*) stack_ptr;
+    persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
+    uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
-    uint32_t* thread_matrix = (uint32_t*) stack_ptr + 8;
+    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -47,9 +33,9 @@ TEST(cas, single_successful)
     EXPECT_TRUE(result);
 
     uint32_t thread_number;
-    std::memcpy(&thread_number, stack_ptr, 4);
+    std::memcpy(&thread_number, heap.get_pmem_ptr(), 4);
     uint32_t value;
-    std::memcpy(&value, stack_ptr + 4, 4);
+    std::memcpy(&value, heap.get_pmem_ptr() + 4, 4);
     EXPECT_EQ(thread_number, 1);
     EXPECT_EQ(value, 24);
 
@@ -62,40 +48,16 @@ TEST(cas, single_successful)
             EXPECT_EQ(cur_value, 0);
         }
     }
-
-    if (munmap(pmemaddr, PMEM_STACK_SIZE) < 0)
-    {
-        perror("munmap");
-        exit(EXIT_FAILURE);
-    }
-    if (close(fd) < 0)
-    {
-        perror("close");
-        exit(EXIT_FAILURE);
-    }
 }
 
 TEST(cas, single_failed)
 {
     temp_file file(get_temp_file_name("heap"));
-    int fd = open(file.file_name.c_str(), O_CREAT | O_RDWR, 0666);
-    if (fd < 0)
-    {
-        perror("open");
-        exit(EXIT_FAILURE);
-    }
-    if (posix_fallocate(fd, 0, PMEM_HEAP_SIZE) != 0)
-    {
-        perror("allocate");
-        exit(EXIT_FAILURE);
-    }
-    void* pmemaddr = mmap(nullptr, PMEM_HEAP_SIZE,
-                          PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
 
-    uint8_t* stack_ptr = static_cast<uint8_t*>(pmemaddr);
-    uint64_t* var = (uint64_t*) stack_ptr;
+    uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
-    uint32_t* thread_matrix = (uint32_t*) stack_ptr + 8;
+    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -112,9 +74,9 @@ TEST(cas, single_failed)
     EXPECT_FALSE(result);
 
     uint32_t thread_number;
-    std::memcpy(&thread_number, stack_ptr, 4);
+    std::memcpy(&thread_number, heap.get_pmem_ptr(), 4);
     uint32_t value;
-    std::memcpy(&value, stack_ptr + 4, 4);
+    std::memcpy(&value, heap.get_pmem_ptr() + 4, 4);
     EXPECT_EQ(thread_number, std::numeric_limits<uint32_t>::max());
     EXPECT_EQ(value, 42);
 
@@ -127,40 +89,16 @@ TEST(cas, single_failed)
             EXPECT_EQ(cur_value, 0);
         }
     }
-
-    if (munmap(pmemaddr, PMEM_STACK_SIZE) < 0)
-    {
-        perror("munmap");
-        exit(EXIT_FAILURE);
-    }
-    if (close(fd) < 0)
-    {
-        perror("close");
-        exit(EXIT_FAILURE);
-    }
 }
 
 TEST(cas, two_successful)
 {
     temp_file file(get_temp_file_name("heap"));
-    int fd = open(file.file_name.c_str(), O_CREAT | O_RDWR, 0666);
-    if (fd < 0)
-    {
-        perror("open");
-        exit(EXIT_FAILURE);
-    }
-    if (posix_fallocate(fd, 0, PMEM_HEAP_SIZE) != 0)
-    {
-        perror("allocate");
-        exit(EXIT_FAILURE);
-    }
-    void* pmemaddr = mmap(nullptr, PMEM_HEAP_SIZE,
-                          PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
 
-    uint8_t* stack_ptr = static_cast<uint8_t*>(pmemaddr);
-    uint64_t* var = (uint64_t*) stack_ptr;
+    uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
-    uint32_t* thread_matrix = (uint32_t*) stack_ptr + 8;
+    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -177,9 +115,9 @@ TEST(cas, two_successful)
     EXPECT_TRUE(result);
 
     uint32_t thread_number;
-    std::memcpy(&thread_number, stack_ptr, 4);
+    std::memcpy(&thread_number, heap.get_pmem_ptr(), 4);
     uint32_t value;
-    std::memcpy(&value, stack_ptr + 4, 4);
+    std::memcpy(&value, heap.get_pmem_ptr() + 4, 4);
     EXPECT_EQ(thread_number, 1);
     EXPECT_EQ(value, 24);
 
@@ -197,8 +135,8 @@ TEST(cas, two_successful)
                                       total_thread_number, thread_matrix);
     EXPECT_TRUE(second_result);
 
-    std::memcpy(&thread_number, stack_ptr, 4);
-    std::memcpy(&value, stack_ptr + 4, 4);
+    std::memcpy(&thread_number, heap.get_pmem_ptr(), 4);
+    std::memcpy(&value, heap.get_pmem_ptr() + 4, 4);
     EXPECT_EQ(thread_number, 2);
     EXPECT_EQ(value, 53);
 
@@ -218,40 +156,16 @@ TEST(cas, two_successful)
             }
         }
     }
-
-    if (munmap(pmemaddr, PMEM_STACK_SIZE) < 0)
-    {
-        perror("munmap");
-        exit(EXIT_FAILURE);
-    }
-    if (close(fd) < 0)
-    {
-        perror("close");
-        exit(EXIT_FAILURE);
-    }
 }
 
 TEST(cas, failed_after_successful)
 {
     temp_file file(get_temp_file_name("heap"));
-    int fd = open(file.file_name.c_str(), O_CREAT | O_RDWR, 0666);
-    if (fd < 0)
-    {
-        perror("open");
-        exit(EXIT_FAILURE);
-    }
-    if (posix_fallocate(fd, 0, PMEM_HEAP_SIZE) != 0)
-    {
-        perror("allocate");
-        exit(EXIT_FAILURE);
-    }
-    void* pmemaddr = mmap(nullptr, PMEM_HEAP_SIZE,
-                          PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
 
-    uint8_t* stack_ptr = static_cast<uint8_t*>(pmemaddr);
-    uint64_t* var = (uint64_t*) stack_ptr;
+    uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
-    uint32_t* thread_matrix = (uint32_t*) stack_ptr + 8;
+    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -268,9 +182,9 @@ TEST(cas, failed_after_successful)
     EXPECT_TRUE(result);
 
     uint32_t thread_number;
-    std::memcpy(&thread_number, stack_ptr, 4);
+    std::memcpy(&thread_number, heap.get_pmem_ptr(), 4);
     uint32_t value;
-    std::memcpy(&value, stack_ptr + 4, 4);
+    std::memcpy(&value, heap.get_pmem_ptr() + 4, 4);
     EXPECT_EQ(thread_number, 1);
     EXPECT_EQ(value, 24);
 
@@ -288,8 +202,8 @@ TEST(cas, failed_after_successful)
                                       total_thread_number, thread_matrix);
     EXPECT_FALSE(second_result);
 
-    std::memcpy(&thread_number, stack_ptr, 4);
-    std::memcpy(&value, stack_ptr + 4, 4);
+    std::memcpy(&thread_number, heap.get_pmem_ptr(), 4);
+    std::memcpy(&value, heap.get_pmem_ptr() + 4, 4);
     EXPECT_EQ(thread_number, 1);
     EXPECT_EQ(value, 24);
 
@@ -302,40 +216,16 @@ TEST(cas, failed_after_successful)
             EXPECT_EQ(cur_value, 0);
         }
     }
-
-    if (munmap(pmemaddr, PMEM_STACK_SIZE) < 0)
-    {
-        perror("munmap");
-        exit(EXIT_FAILURE);
-    }
-    if (close(fd) < 0)
-    {
-        perror("close");
-        exit(EXIT_FAILURE);
-    }
 }
 
 TEST(cas, successful_after_failed)
 {
     temp_file file(get_temp_file_name("heap"));
-    int fd = open(file.file_name.c_str(), O_CREAT | O_RDWR, 0666);
-    if (fd < 0)
-    {
-        perror("open");
-        exit(EXIT_FAILURE);
-    }
-    if (posix_fallocate(fd, 0, PMEM_HEAP_SIZE) != 0)
-    {
-        perror("allocate");
-        exit(EXIT_FAILURE);
-    }
-    void* pmemaddr = mmap(nullptr, PMEM_HEAP_SIZE,
-                          PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
 
-    uint8_t* stack_ptr = static_cast<uint8_t*>(pmemaddr);
-    uint64_t* var = (uint64_t*) stack_ptr;
+    uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
-    uint32_t* thread_matrix = (uint32_t*) stack_ptr + 8;
+    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -352,9 +242,9 @@ TEST(cas, successful_after_failed)
     EXPECT_FALSE(result);
 
     uint32_t thread_number;
-    std::memcpy(&thread_number, stack_ptr, 4);
+    std::memcpy(&thread_number, heap.get_pmem_ptr(), 4);
     uint32_t value;
-    std::memcpy(&value, stack_ptr + 4, 4);
+    std::memcpy(&value, heap.get_pmem_ptr() + 4, 4);
     EXPECT_EQ(thread_number, std::numeric_limits<uint32_t>::max());
     EXPECT_EQ(value, 42);
 
@@ -372,8 +262,8 @@ TEST(cas, successful_after_failed)
                                       total_thread_number, thread_matrix);
     EXPECT_TRUE(second_result);
 
-    std::memcpy(&thread_number, stack_ptr, 4);
-    std::memcpy(&value, stack_ptr + 4, 4);
+    std::memcpy(&thread_number, heap.get_pmem_ptr(), 4);
+    std::memcpy(&value, heap.get_pmem_ptr() + 4, 4);
     EXPECT_EQ(thread_number, 2);
     EXPECT_EQ(value, 53);
 
@@ -385,16 +275,5 @@ TEST(cas, successful_after_failed)
             uint32_t cur_value = *(thread_matrix + cur_offset);
             EXPECT_EQ(cur_value, 0);
         }
-    }
-
-    if (munmap(pmemaddr, PMEM_STACK_SIZE) < 0)
-    {
-        perror("munmap");
-        exit(EXIT_FAILURE);
-    }
-    if (close(fd) < 0)
-    {
-        perror("close");
-        exit(EXIT_FAILURE);
     }
 }
