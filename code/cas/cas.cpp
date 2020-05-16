@@ -5,6 +5,7 @@
 #include <cassert>
 #include "../storage/global_storage.h"
 #include "../persistent_memory/persistent_memory_holder.h"
+#include <iostream>
 
 bool cas_internal(uint64_t* var,
                   uint32_t expected_value,
@@ -64,6 +65,12 @@ bool cas_internal(uint64_t* var,
          * Atomically store 4 bytes and flush caches to NVRAM
          */
         __atomic_store_n(thread_matrix + index, cur_value, __ATOMIC_SEQ_CST);
+
+        /*
+         * [thread_matrix + index .. thread_matrix + index + 3] belongs to single cache line
+         */
+        assert(((uint64_t) thread_matrix + index) / CACHE_LINE_SIZE ==
+               ((uint64_t) thread_matrix + index + 3) / CACHE_LINE_SIZE);
         pmem_do_flush(thread_matrix + index, 4);
     }
     /*
@@ -156,7 +163,7 @@ bool cas_recover_internal(uint64_t* var,
         }
     }
     /*
-     * No other threads saw current CAS, it can be retried.
+     * No other threads have seen current CAS, it can be retried.
      */
     return cas_internal(var, expected_value, new_value, cur_thread_number, total_thread_number, thread_matrix);
 }

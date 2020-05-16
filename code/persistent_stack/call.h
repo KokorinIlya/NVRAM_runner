@@ -87,7 +87,8 @@ void remove_frame(ram_stack& stack, persistent_memory_holder& persistent_stack);
  * write some default value (that cannot be return value of the function) to a place, where
  * return value of the function, that is being called, will be written.
  * Can write new_ans_filler to the beginning of new frame. If new_ans_filler size is not between 1 and 8
- * bytes inclusively, std::runtime_error will be thrown.
+ * bytes inclusively, std::runtime_error will be thrown. This can be used to fill answer memory of new frame
+ * with some default value.
  * Since first frame of the stack cannot be removed, main function of each thread should
  * NEVER return a value. Main function of each thread should wait in an infinite loop and
  * finish it's execution only by exception or system crash. But, since according to the

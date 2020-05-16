@@ -1,16 +1,13 @@
 #include "gtest/gtest.h"
 #include "../../code/cas/cas.h"
 #include "../common/test_utils.h"
-#include <fcntl.h>
 #include "../../code/common/constants_and_types.h"
 #include "../../code/common/pmem_utils.h"
-#include <sys/mman.h>
-#include <unistd.h>
 #include <cstring>
 #include <limits>
 #include "../../code/persistent_memory/persistent_memory_holder.h"
 
-TEST(cas, single_successful)
+TEST(cas_internal, single_successful)
 {
     temp_file file(get_temp_file_name("heap"));
     persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
@@ -50,7 +47,7 @@ TEST(cas, single_successful)
     }
 }
 
-TEST(cas, single_failed)
+TEST(cas_internal, single_failed)
 {
     temp_file file(get_temp_file_name("heap"));
     persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
@@ -91,7 +88,7 @@ TEST(cas, single_failed)
     }
 }
 
-TEST(cas, two_successful)
+TEST(cas_internal, two_successful)
 {
     temp_file file(get_temp_file_name("heap"));
     persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
@@ -158,7 +155,7 @@ TEST(cas, two_successful)
     }
 }
 
-TEST(cas, failed_after_successful)
+TEST(cas_internal, failed_after_successful)
 {
     temp_file file(get_temp_file_name("heap"));
     persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
@@ -218,7 +215,7 @@ TEST(cas, failed_after_successful)
     }
 }
 
-TEST(cas, successful_after_failed)
+TEST(cas_internal, successful_after_failed)
 {
     temp_file file(get_temp_file_name("heap"));
     persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
