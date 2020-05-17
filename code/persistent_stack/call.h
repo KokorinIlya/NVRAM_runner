@@ -99,10 +99,10 @@ void remove_frame(ram_stack& stack, persistent_memory_holder& persistent_stack);
  * @param args - arguments of function to call with.
  * @param ans_filler - if option contains value, it's value will be written to an answer memory
  *                     of current stack frame. Otherwise, won't be used.
+ * @param new_ans_filler - if option contains value, it's value will be written to answer memory of
+ *                         new stack frame. Otherwise, won't be used.
  * @param call_recover - if true, recover version of function will be called. Otherwise, ordinary
  *                       version will be called.
- * @param call_recover - specifies, which of the function should be called
- *                       (ordinary or recovery version).
  * @throws std::runtime_error - if ans_filler size is not between 1 and 8 bytes inclusively or
  *                              if new_ans_filler size is not between 1 and 8 bytes inclusively or
  *                              if call_recover is true and system is not running in recovery mode.
