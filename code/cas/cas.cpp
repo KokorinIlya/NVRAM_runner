@@ -4,8 +4,12 @@
 #include "../common/pmem_utils.h"
 #include <cassert>
 #include "../storage/global_storage.h"
+#include "../storage/thread_local_owning_storage.h"
 #include "../persistent_memory/persistent_memory_holder.h"
 #include <iostream>
+#include "../model/cur_thread_id_holder.h"
+#include "../model/total_thread_count_holder.h"
+#include "../persistent_stack/call.h"
 
 bool cas_internal(uint64_t* var,
                   uint32_t expected_value,
@@ -14,15 +18,6 @@ bool cas_internal(uint64_t* var,
                   uint32_t total_thread_number,
                   uint32_t* thread_matrix)
 {
-    /*
-     * Address of variable should be aligned by cache line size.
-     * Note, that since result of malloc is aligned by page size,
-     * alignment of address of variable is equivalent to alignment of
-     * offset of variable (where offset is calculated from the beginning
-     * of mapping). I.e. if var == PMEM_START_ADDRESS + offset,
-     * var % CACHE_LINE_SIZE == offset % CACHE_LINE_SIZE.
-     */
-    assert((uint64_t) var % CACHE_LINE_SIZE == 0);
     /*
      * Atomically load 8 bytes of <thread_id, value> in per-process local memory.
      * No other process can interfere this load, therefore only consistent 8 bytes can be read.
@@ -101,6 +96,15 @@ bool cas_internal(uint64_t* var,
     if (result)
     {
         /*
+         * Address of variable should be aligned by cache line size.
+         * Note, that since result of malloc is aligned by page size,
+         * alignment of address of variable is equivalent to alignment of
+         * offset of variable (where offset is calculated from the beginning
+         * of mapping). I.e. if var == PMEM_START_ADDRESS + offset,
+         * var % CACHE_LINE_SIZE == offset % CACHE_LINE_SIZE.
+         */
+        assert((uint64_t) var % CACHE_LINE_SIZE == 0);
+        /*
          * If CAS succeed, new pair <thread_id, value> was written.
          * Flush 8 bytes to NVRAM. Note, that for atomicity of flush,
          * CAS'ed variable should be aligned by cache line.
@@ -121,8 +125,6 @@ bool cas_recover_internal(uint64_t* var,
                           uint32_t total_thread_number,
                           uint32_t* thread_matrix)
 {
-    assert((uint64_t) var % CACHE_LINE_SIZE == 0);
-
     /*
      * Atomically load 8 bytes of <thread_id, value> in per-process local memory.
      */
@@ -199,13 +201,44 @@ void cas_common(const uint8_t* args, bool call_recover)
     uint64_t thread_matrix_offset;
     std::memcpy(&thread_matrix_offset, args + cur_offset, 8);
 
-    /*
-     * TODO: get total thread numbers from global storage, cur thread number from thread local storage
-     */
+    uint32_t total_thread_count = global_storage<total_thread_count_holder>::get_const_object().total_thread_count;
+    uint32_t cur_thread_id = thread_local_owning_storage<cur_thread_id_holder>::get_const_object().cur_thread_id;
 
     uint8_t* pmem_start_address = global_storage<persistent_memory_holder>::get_object().get_pmem_ptr();
     uint64_t* var = (uint64_t*) pmem_start_address + var_offset;
     uint32_t* thread_matrix = (uint32_t*) pmem_start_address + thread_matrix_offset;
+
+    bool result;
+    if (call_recover)
+    {
+        result = cas_internal(
+                var,
+                expected_value,
+                new_value,
+                cur_thread_id,
+                total_thread_count,
+                thread_matrix
+        );
+    }
+    else
+    {
+        result = cas_recover_internal(
+                var,
+                expected_value,
+                new_value,
+                cur_thread_id,
+                total_thread_count,
+                thread_matrix
+        );
+    }
+    if (result)
+    {
+        write_answer(std::vector<uint8_t>({0x1}));
+    }
+    else
+    {
+        write_answer(std::vector<uint8_t>({0x0}));
+    }
 }
 
 void cas(const uint8_t* args)

@@ -16,6 +16,8 @@ add_executable(
         ../code/frame/stack_frame.cpp
         ../code/frame/positioned_frame.cpp
         ../code/cas/cas.cpp
+        ../code/model/total_thread_count_holder.cpp
+        ../code/model/cur_thread_id_holder.cpp
         blocking_queue/queue_test.cpp
         persistent_stack/test_persistent_stack.cpp
         common/test_utils.cpp
