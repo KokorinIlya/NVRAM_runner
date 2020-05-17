@@ -4,6 +4,7 @@
 #include "../common/pmem_utils.h"
 #include <cassert>
 #include "../storage/global_storage.h"
+#include "../storage/global_non_owning_storage.h"
 #include "../storage/thread_local_owning_storage.h"
 #include "../persistent_memory/persistent_memory_holder.h"
 #include <iostream>
@@ -204,7 +205,7 @@ void cas_common(const uint8_t* args, bool call_recover)
     uint32_t total_thread_count = global_storage<total_thread_count_holder>::get_const_object().total_thread_count;
     uint32_t cur_thread_id = thread_local_owning_storage<cur_thread_id_holder>::get_const_object().cur_thread_id;
 
-    uint8_t* pmem_start_address = global_storage<persistent_memory_holder>::get_object().get_pmem_ptr();
+    uint8_t* pmem_start_address = global_non_owning_storage<persistent_memory_holder>::ptr->get_pmem_ptr();
     uint64_t* var = (uint64_t*) pmem_start_address + var_offset;
     uint32_t* thread_matrix = (uint32_t*) pmem_start_address + thread_matrix_offset;
 

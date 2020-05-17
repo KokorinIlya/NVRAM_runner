@@ -57,7 +57,7 @@ T blocking_queue<T>::take()
     {
         cv.wait(lock);
     }
-    const T& result = queue.front();
+    T result = queue.front();
     queue.pop();
     return result;
 }

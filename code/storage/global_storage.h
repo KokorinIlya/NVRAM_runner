@@ -50,6 +50,12 @@ public:
     static void set_object(const T& object);
 
     /**
+     * Global storage  will store the object, that is passed as an argument.
+     * @param object - object to store
+     */
+    static void set_object(T&& object);
+
+    /**
      * Returns reference to the object, that is stored in the global storage.
      * @return object, that was an argument of the last call to set_object.
      */
@@ -95,6 +101,12 @@ const T& global_storage<T>::get_const_object()
     {
         throw std::runtime_error("global storage: get_const_object call before set_object call");
     }
+}
+
+template <typename T>
+void global_storage<T>::set_object(T&& object)
+{
+    object_opt.emplace(object);
 }
 
 #endif //DIPLOM_GLOBAL_STORAGE_H

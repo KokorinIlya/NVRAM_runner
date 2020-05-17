@@ -174,7 +174,7 @@ std::vector<uint8_t> read_current_answer(uint8_t size);
  *      g()
  *      read_answer(8) - reads answer, that was written by function g
  *      h()
- *      read_answer(8) - reads answer, that was written by function g
+ *      read_answer(8) - reads answer, that was written by function h
  *
  * This function can read from 1 up to 8 bytes. If previously returned function has written
  * N bytes of answer, then only N bytes can be retrieved correctly, N+1-th byte can contain
