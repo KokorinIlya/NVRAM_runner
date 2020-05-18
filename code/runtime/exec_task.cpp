@@ -5,7 +5,6 @@
 #include <cstring>
 #include "../persistent_stack/call.h"
 #include "../storage/global_non_owning_storage.h"
-#include "../persistent_memory/persistent_memory_holder.h"
 #include <cassert>
 #include "../common/pmem_utils.h"
 #include <optional>
@@ -51,7 +50,7 @@ void exec_task_common(const uint8_t* args, bool call_recover)
             }
 
             /*
-             * ordinary (not recover) operation is called OR answer isn't written to pmem
+             * ordinary (not recover) operation is called OR answer hasn't been written to pmem
              */
 
             std::vector<uint8_t> cas_args(24);
@@ -89,6 +88,7 @@ void exec_task_common(const uint8_t* args, bool call_recover)
     }
 }
 
+// TODO: test
 void exec_task(const uint8_t* args)
 {
     exec_task_common(args, false);

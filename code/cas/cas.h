@@ -69,6 +69,7 @@ void cas(const uint8_t* args);
 
 /**
  * Recover version of cas, that can be called by system runtime, using do_call.
+ * This function receives the same arguments, as cas, in the same order.
  * @param args - arguments of function, marshalled to byte array.
  */
 void cas_recover(const uint8_t* args);
