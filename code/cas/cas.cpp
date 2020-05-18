@@ -7,7 +7,6 @@
 #include "../storage/global_non_owning_storage.h"
 #include "../storage/thread_local_owning_storage.h"
 #include "../persistent_memory/persistent_memory_holder.h"
-#include <iostream>
 #include "../model/cur_thread_id_holder.h"
 #include "../model/total_thread_count_holder.h"
 #include "../persistent_stack/call.h"

@@ -36,11 +36,18 @@ void exec_task_common(const uint8_t* args, bool call_recover)
             uint8_t* answer_address =
                     global_non_owning_storage<persistent_memory_holder>::ptr->get_pmem_ptr() + answer_offset;
 
+            /*
+             * System is running in recovery mode
+             */
             if (call_recover)
             {
                 std::vector<uint8_t> cas_answer = read_answer(1);
                 assert(cas_answer.size() == 1 &&
                        (cas_answer[0] == 0x0 || cas_answer[0] == 0x1 || cas_answer[0] == 0xFF));
+                /*
+                 * If CAS has already finished it's execution, retrieve it's result.
+                 * Otherwise, run CAS again.
+                 */
                 if (cas_answer[0] == 0x0 || cas_answer[0] == 0x1)
                 {
                     std::memcpy(answer_address, &cas_answer[0], 1);
