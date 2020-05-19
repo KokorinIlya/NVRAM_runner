@@ -55,4 +55,47 @@ uint64_t pmem_allocator::get_block_num(uint64_t block_offset) const
 uint8_t* pmem_allocator::pmem_alloc()
 {
     std::unique_lock lock(mutex);
+    if (!freed_blocks.empty())
+    {
+        /*
+         * Remove arbitrary freed block from freed blocks set and returns pointer to the block
+         */
+        const uint64_t freed_block_num = *freed_blocks.begin();
+        freed_blocks.erase(freed_block_num);
+        return heap_ptr + get_block_start(freed_block_num);
+    }
+    if (allocation_border == max_border)
+    {
+        throw std::runtime_error("Cannot perform allocation: all blocks have already been allocated");
+    }
+
+    /*
+     * Retrieving new allocation border
+     */
+    const uint64_t new_allocation_border = allocation_border + 1;
+    /*
+     * Last allocated byte of heap (i.e. last byte of the last allocated block)
+     */
+    const uint64_t new_heap_end = get_block_end(new_allocation_border);
+    /*
+     * Before current allocation, this byte was the last allocated byte.
+     */
+    const uint64_t old_heap_end = get_block_end(allocation_border);
+    /*
+     * Marking new heap end as allocated block.
+     */
+    std::memcpy(heap_ptr + new_heap_end, &HEAP_END_MARKER, 1);
+    pmem_do_flush(heap_ptr + new_heap_end, 1);
+    /*
+     * Marking previous heap end as ordinary allocated block, i.e. moving heap end forward.
+     */
+    std::memcpy(heap_ptr + old_heap_end, &ALLOCATED_BLOCK_MARKER, 1);
+    pmem_do_flush(heap_ptr + old_heap_end, 1);
+
+    /*
+     * Increasing allocation border
+     */
+    allocation_border = new_allocation_border;
+
+    return heap_ptr + get_block_start(new_allocation_border);
 }
