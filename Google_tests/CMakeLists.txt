@@ -35,5 +35,6 @@ add_executable(
         cas/cas_internal_test.cpp
         cas/cas_test.cpp
         runtime/exec_task_test.cpp
+        runtime/restoration_test.cpp
 )
 target_link_libraries(Google_Tests_run pmem gtest gtest_main)
