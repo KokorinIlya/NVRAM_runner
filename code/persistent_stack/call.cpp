@@ -7,6 +7,8 @@
 #include "../model/system_mode.h"
 #include <cassert>
 
+// TODO: remove 0x0, 0x1, replace to named constants
+
 /**
  * Reads single frame from persistent memory.
  * @param stack_ptr - pointer to the beginning of mapping of persistent memory to the virtual memory.

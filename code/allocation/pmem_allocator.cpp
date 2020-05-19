@@ -13,6 +13,9 @@ pmem_allocator::pmem_allocator(uint8_t* _heap_ptr, uint32_t _block_size, uint64_
 {
     if (init_new)
     {
+        /*
+         * Marks first block of heap as allocated. First block can never be given to user or freed.
+         */
         std::memcpy(heap_ptr + get_block_end(0), &HEAP_END_MARKER, 1);
     }
     else
@@ -24,11 +27,18 @@ pmem_allocator::pmem_allocator(uint8_t* _heap_ptr, uint32_t _block_size, uint64_
             std::memcpy(&cur_marker, heap_ptr + get_block_end(cur_block_num), 1);
             if (cur_marker == HEAP_END_MARKER)
             {
+                /*
+                 * Reached heap end, all further blocks are not allocated.
+                 */
                 allocation_border = cur_block_num;
                 return;
             }
             else if (cur_marker == FREED_BLOCK_MARKER)
             {
+                /*
+                 * Current block is situated before heap end and is not allocated,
+                 * adding it to set.
+                 */
                 freed_blocks.insert(cur_block_num);
             }
         }
@@ -98,4 +108,10 @@ uint8_t* pmem_allocator::pmem_alloc()
     allocation_border = new_allocation_border;
 
     return heap_ptr + get_block_start(new_allocation_border);
+}
+
+void pmem_allocator::pmem_free(uint8_t* ptr)
+{
+    std::unique_lock lock(mutex);
+    // TODO
 }

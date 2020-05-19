@@ -10,6 +10,7 @@
 #include "../model/cur_thread_id_holder.h"
 #include "../model/total_thread_count_holder.h"
 #include "../persistent_stack/call.h"
+#include <unistd.h>
 
 bool cas_internal(uint64_t* var,
                   uint32_t expected_value,
@@ -46,6 +47,10 @@ bool cas_internal(uint64_t* var,
         return false;
     }
 
+#ifdef CAS_TEST
+    usleep(1000000);
+#endif
+
     /*
      * If some other thread changed the value using CAS
      */
@@ -68,6 +73,11 @@ bool cas_internal(uint64_t* var,
                ((uint64_t) thread_matrix + index + 3) / CACHE_LINE_SIZE);
         pmem_do_flush(thread_matrix + index, 4);
     }
+
+#ifdef CAS_TEST
+    usleep(1000000);
+#endif
+
     /*
      * Collects 8 bytes of <thread_id, value> from thread_id and value
      */
@@ -142,6 +152,10 @@ bool cas_recover_internal(uint64_t* var,
     uint32_t cur_value;
     std::memcpy(&cur_value, last_thread_number_and_cur_value_ptr + 4, 4);
 
+#ifdef CAS_TEST
+    usleep(1000000);
+#endif
+
     if (last_thread_number == cur_thread_number && cur_value == new_value)
     {
         /*
@@ -150,6 +164,11 @@ bool cas_recover_internal(uint64_t* var,
          */
         return true;
     }
+
+#ifdef CAS_TEST
+    usleep(1000000);
+#endif
+
     for (uint32_t other_thread_number = 0; other_thread_number < total_thread_number; other_thread_number++)
     {
         uint32_t index = cur_thread_number * total_thread_number + other_thread_number;
@@ -164,6 +183,11 @@ bool cas_recover_internal(uint64_t* var,
             return true;
         }
     }
+
+#ifdef CAS_TEST
+    usleep(1000000);
+#endif
+
     /*
      * No other threads have seen current CAS, it can be retried.
      */
@@ -231,6 +255,11 @@ void cas_common(const uint8_t* args, bool call_recover)
                 thread_matrix
         );
     }
+
+#ifdef CAS_TEST
+    usleep(1000000);
+#endif
+
     if (result)
     {
         write_answer(std::vector<uint8_t>({0x1}));
