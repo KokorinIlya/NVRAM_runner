@@ -95,7 +95,6 @@ void exec_task_common(const uint8_t* args, bool call_recover)
     }
 }
 
-// TODO: test
 void exec_task(const uint8_t* args)
 {
     exec_task_common(args, false);
