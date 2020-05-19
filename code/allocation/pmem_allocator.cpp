@@ -9,7 +9,7 @@ pmem_allocator::pmem_allocator(uint8_t* _heap_ptr, uint32_t _block_size, uint64_
           freed_blocks(),
           allocation_border(0),
           max_border(_max_border),
-          lock()
+          mutex()
 {
     if (init_new)
     {
@@ -50,4 +50,9 @@ uint64_t pmem_allocator::get_block_num(uint64_t block_offset) const
 {
     assert(block_offset % (block_size + 1) == 0);
     return block_offset / (block_size + 1);
+}
+
+uint8_t* pmem_allocator::pmem_alloc()
+{
+    std::unique_lock lock(mutex);
 }

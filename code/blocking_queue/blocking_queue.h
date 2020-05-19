@@ -9,7 +9,7 @@
  * Queue, that stores element of some type.
  * Can be used for solving producer-consumer task in a multi-threading
  * environment. Stores all data in RAM. Synchronization is done
- * using single coarse-grained lock.
+ * using single coarse-grained mutex.
  * @tparam T - type of elements, that will be stored in queue.
  */
 template <typename T>

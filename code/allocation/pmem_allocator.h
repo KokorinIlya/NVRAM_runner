@@ -124,7 +124,7 @@ private:
      * Mutex, that prevents concurrent access to allocator and ensures linearizability of allocate and free
      * operations.
      */
-    std::mutex lock;
+    std::mutex mutex;
 };
 
 #endif //DIPLOM_PMEM_ALLOCATOR_H
