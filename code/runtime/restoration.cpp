@@ -15,11 +15,17 @@ void do_restoration(persistent_memory_holder& persistent_stack)
     while (r_stack.size() > 1)
     {
         stack_frame const& top_frame = r_stack.get_last_frame().get_frame();
+        /*
+         * Retrieve pointer to recovery version of function, using function name from persistent stack frame.
+         */
         function_ptr f_recover = global_storage<function_address_holder>::get_const_object()
                 .funcs
                 .at(top_frame.get_function_name())
                 .second;
         f_recover(top_frame.get_args().data());
+        /*
+         * reference to top_frame becomes dangling, but it isn't used anymore
+         */
         remove_frame(r_stack, persistent_stack);
     }
 }
