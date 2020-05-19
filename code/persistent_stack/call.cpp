@@ -11,7 +11,7 @@
  * Reads single frame from persistent memory.
  * @param stack_ptr - pointer to the beginning of mapping of persistent memory to the virtual memory.
  * @param frame_offset - offset of the frame, that should be read. Offset is calculated from the beginning of
- *        the beginning of mapping of persistent memory to the virtual memory. Therefore, address of beginning
+ *        of mapping of persistent memory to the virtual memory. Therefore, address of beginning
  *        of current stack frame is stack_ptr + frame_offset.
  * @return pair. First element of pair is shack frame, that has just been read. Second element of pair is true,
  *         if current frame is the last frame in the stack (i.e. it is terminated with stack end marker),
