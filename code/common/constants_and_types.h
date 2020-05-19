@@ -23,6 +23,16 @@ extern const uint64_t PMEM_HEAP_SIZE;
  */
 extern const uint32_t CACHE_LINE_SIZE;
 
+/*
+ * Last frame of persistent stack ends with this marker
+ */
+extern const uint8_t STACK_END_MARKER;
+
+/*
+ * Each frame of persistent stack, except last, ends with this marker
+ */
+extern const uint8_t FRAME_END_MARKER;
+
 /**
  * Size of page on the current architecture - approximately 4 KB.
  */

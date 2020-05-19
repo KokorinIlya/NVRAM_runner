@@ -10,7 +10,6 @@
 #include "../model/cur_thread_id_holder.h"
 #include "../model/total_thread_count_holder.h"
 #include "../persistent_stack/call.h"
-#include <unistd.h>
 
 bool cas_internal(uint64_t* var,
                   uint32_t expected_value,

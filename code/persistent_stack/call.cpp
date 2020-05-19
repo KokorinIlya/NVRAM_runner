@@ -7,8 +7,6 @@
 #include "../model/system_mode.h"
 #include <cassert>
 
-// TODO: remove 0x0, 0x1, replace to named constants
-
 /**
  * Reads single frame from persistent memory.
  * @param stack_ptr - pointer to the beginning of mapping of persistent memory to the virtual memory.
@@ -59,7 +57,7 @@ std::pair<stack_frame, bool> read_frame(const uint8_t* const stack_ptr, const ui
      */
     uint8_t end_marker;
     std::memcpy(&end_marker, stack_ptr + cur_offset, 1);
-    const bool is_last = end_marker == 0x1;
+    const bool is_last = end_marker == STACK_END_MARKER;
 
     return std::make_pair(stack_frame(function_name, args), is_last);
 }
@@ -164,8 +162,7 @@ void add_new_frame(ram_stack& stack,
     /*
      * Write 1 byte of stack end marker
      */
-    const uint8_t stack_end_marker = 0x1;
-    std::memcpy(stack_mem + cur_offset, &stack_end_marker, 1);
+    std::memcpy(stack_mem + cur_offset, &STACK_END_MARKER, 1);
 
     /*
      * All new frame is flushed, even if new_ans_filler is empty.
@@ -182,8 +179,7 @@ void add_new_frame(ram_stack& stack,
         /*
          * Stack end marker is just before first free byte of the stack
          */
-        const uint8_t frame_end_marker = 0x0;
-        std::memcpy(stack_mem + stack_end - 1, &frame_end_marker, 1);
+        std::memcpy(stack_mem + stack_end - 1, &FRAME_END_MARKER, 1);
         pmem_do_flush(stack_mem + stack_end - 1, 1);
     }
 }
@@ -200,8 +196,7 @@ void remove_frame(ram_stack& stack, persistent_memory_holder& persistent_stack)
      * Stack end marker is just before first free byte of the stack
      */
     const uint64_t end_marker_offset = stack.get_stack_end() - 1;
-    const uint8_t stack_end_marker = 0x1;
-    std::memcpy(stack_mem + end_marker_offset, &stack_end_marker, 1);
+    std::memcpy(stack_mem + end_marker_offset, &STACK_END_MARKER, 1);
     pmem_do_flush(stack_mem + end_marker_offset, 1);
 }
 
