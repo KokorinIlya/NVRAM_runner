@@ -22,6 +22,7 @@ add_executable(
         code/model/total_thread_count_holder.cpp
         code/model/cur_thread_id_holder.cpp
         code/runtime/exec_task.cpp
+        code/runtime/restoration.cpp
 )
 target_link_libraries(Diplom pmem pthread)
 add_subdirectory(Google_tests)

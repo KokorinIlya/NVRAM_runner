@@ -19,6 +19,7 @@ add_executable(
         ../code/model/total_thread_count_holder.cpp
         ../code/model/cur_thread_id_holder.cpp
         ../code/runtime/exec_task.cpp
+        ../code/runtime/restoration.cpp
         blocking_queue/queue_test.cpp
         persistent_stack/test_persistent_stack.cpp
         common/test_utils.cpp

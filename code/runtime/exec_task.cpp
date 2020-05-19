@@ -89,7 +89,7 @@ void exec_task_common(const uint8_t* args, bool call_recover)
         }
         default:
         {
-            std::cerr << "Cannot execute tas of type " << (int) task_type << std::endl;
+            std::cerr << "Cannot execute task of type " << (int) task_type << std::endl;
             break;
         }
     }
