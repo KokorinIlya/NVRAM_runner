@@ -40,6 +40,15 @@ public:
      * @param ptr - pointer to the first byte of the block, that should be freed.
      */
     void pmem_free(uint8_t* ptr);
+
+    /**
+     * Returns true, if ptr is pointer to the beginning of block, that was allocated and hasn't been freed yet,
+     * false otherwise. Parameter must be a valid pointer to beginning of some block (possibly not allocated),
+     * otherwise behaviour of function is undefined.
+     * @param ptr - pointer to the beginning of some block.
+     * @return true, if ptr is pointer to the beginning of allocated block, false otherwise.
+     */
+    bool is_allocated(uint8_t* ptr);
 private:
     /**
      * Retrieves offset of beginning of block. Offset is calculated from the beginning of

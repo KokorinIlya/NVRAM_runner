@@ -68,10 +68,21 @@ uint8_t* pmem_allocator::pmem_alloc()
     if (!freed_blocks.empty())
     {
         /*
-         * Remove arbitrary freed block from freed blocks set and returns pointer to the block
+         * Remove arbitrary freed block from freed blocks set
          */
         const uint64_t freed_block_num = *freed_blocks.begin();
         freed_blocks.erase(freed_block_num);
+
+        /*
+         * Mark block as allocated
+         */
+        uint64_t freed_block_end = get_block_end(freed_block_num);
+        std::memcpy(heap_ptr + freed_block_num, &ALLOCATED_BLOCK_MARKER, 1);
+        pmem_do_flush(heap_ptr + freed_block_num, 1);
+
+        /*
+         * Return pointer to block
+         */
         return heap_ptr + get_block_start(freed_block_num);
     }
     if (allocation_border == max_border)
@@ -113,5 +124,51 @@ uint8_t* pmem_allocator::pmem_alloc()
 void pmem_allocator::pmem_free(uint8_t* ptr)
 {
     std::unique_lock lock(mutex);
-    // TODO
+    uint64_t block_num = get_block_num(ptr - heap_ptr);
+    assert(block_num > 0 && block_num <= allocation_border);
+
+    if (block_num < allocation_border)
+    {
+        /*
+         * Mark block as freed
+         */
+        freed_blocks.insert(block_num);
+        uint64_t block_end = get_block_end(block_num);
+        std::memcpy(heap_ptr + block_end, &FREED_BLOCK_MARKER, 1);
+        pmem_do_flush(heap_ptr + block_end, 1);
+        return;
+    }
+
+    /*
+     * Freed block is last allocated block. Find previous allocate block.
+     * Traversing from heap end to beginning.
+     */
+    uint64_t previous_allocated_block = block_num - 1;
+    while (true)
+    {
+        uint8_t cur_marker;
+        std::memcpy(&cur_marker, heap_ptr + get_block_end(previous_allocated_block), 1);
+        assert(cur_marker == ALLOCATED_BLOCK_MARKER || cur_marker == FREED_BLOCK_MARKER);
+        if (cur_marker == FREED_BLOCK_MARKER)
+        {
+            /*
+             * Current block is freed. After moving allocation border to the left, ths block will be situated
+             * after allocation border. Therefore, it should be removed from freed block set.
+             */
+            assert(freed_blocks.count(previous_allocated_block) == 1);
+            freed_blocks.erase(previous_allocated_block);
+            previous_allocated_block--;
+        }
+        else
+        {
+            /*
+             * Current block is allocated and has ALLOCATED_BLOCK_MARKER. After moving allocation border to the left,
+             * this block will become allocation border.
+             */
+            break;
+        }
+    }
+    std::memcpy(heap_ptr + get_block_end(previous_allocated_block), &HEAP_END_MARKER, 1);
+    pmem_do_flush(heap_ptr + get_block_end(previous_allocated_block), 1);
+    allocation_border = previous_allocated_block;
 }
