@@ -26,8 +26,10 @@ pmem_allocator::pmem_allocator(uint8_t* _heap_ptr, uint32_t _block_size, uint64_
         uint64_t cur_block_num = 0;
         while (true)
         {
-            uint32_t cur_marker;
+            uint8_t cur_marker;
             std::memcpy(&cur_marker, heap_ptr + get_block_end(cur_block_num), 1);
+            assert(cur_marker == HEAP_END_MARKER
+                   || cur_marker == ALLOCATED_BLOCK_MARKER || cur_marker == FREED_BLOCK_MARKER);
             if (cur_marker == HEAP_END_MARKER)
             {
                 /*
@@ -44,6 +46,7 @@ pmem_allocator::pmem_allocator(uint8_t* _heap_ptr, uint32_t _block_size, uint64_
                  */
                 freed_blocks.insert(cur_block_num);
             }
+            cur_block_num++;
         }
     }
 }
