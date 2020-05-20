@@ -37,5 +37,6 @@ add_executable(
         cas/cas_test.cpp
         runtime/exec_task_test.cpp
         runtime/restoration_test.cpp
+        allocation/pmem_allocator_test.cpp
 )
 target_link_libraries(Google_Tests_run pmem gtest gtest_main)
