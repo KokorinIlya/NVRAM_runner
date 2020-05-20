@@ -80,8 +80,8 @@ uint8_t* pmem_allocator::pmem_alloc()
          * Mark block as allocated
          */
         uint64_t freed_block_end = get_block_end(freed_block_num);
-        std::memcpy(heap_ptr + freed_block_num, &ALLOCATED_BLOCK_MARKER, 1);
-        pmem_do_flush(heap_ptr + freed_block_num, 1);
+        std::memcpy(heap_ptr + freed_block_end, &ALLOCATED_BLOCK_MARKER, 1);
+        pmem_do_flush(heap_ptr + freed_block_end, 1);
 
         /*
          * Return pointer to block

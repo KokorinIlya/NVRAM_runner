@@ -9,29 +9,29 @@ TEST(pmem_allocator, single_allocation)
     persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
     pmem_allocator allocator(heap.get_pmem_ptr(), 1, 200, true);
 
-    uint64_t first_offset = allocator.pmem_alloc() - heap.get_pmem_ptr();
-    EXPECT_EQ(first_offset, 2);
-    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + first_offset));
+    uint64_t offset_1 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_1, 2);
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
 }
 
-TEST(pmem_allocator, allocations)
+TEST(pmem_allocator, multiple_allocations)
 {
     temp_file file(get_temp_file_name("heap"));
     persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
     pmem_allocator allocator(heap.get_pmem_ptr(), 1, 200, true);
 
-    uint64_t first_offset = allocator.pmem_alloc() - heap.get_pmem_ptr();
-    EXPECT_EQ(first_offset, 2);
+    uint64_t offset_1 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_1, 2);
 
-    uint64_t second_offset = allocator.pmem_alloc() - heap.get_pmem_ptr();
-    EXPECT_EQ(second_offset, 4);
+    uint64_t offset_2 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_2, 4);
 
-    uint64_t third_offset = allocator.pmem_alloc() - heap.get_pmem_ptr();
-    EXPECT_EQ(third_offset, 6);
+    uint64_t offset_3 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_3, 6);
 
-    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + first_offset));
-    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + second_offset));
-    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + third_offset));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_2));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_3));
 }
 
 TEST(pmem_allocator, free_last)
@@ -40,22 +40,114 @@ TEST(pmem_allocator, free_last)
     persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
     pmem_allocator allocator(heap.get_pmem_ptr(), 1, 200, true);
 
-    uint64_t first_offset = allocator.pmem_alloc() - heap.get_pmem_ptr();
-    EXPECT_EQ(first_offset, 2);
+    uint64_t offset_1 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_1, 2);
 
-    uint64_t second_offset = allocator.pmem_alloc() - heap.get_pmem_ptr();
-    EXPECT_EQ(second_offset, 4);
+    uint64_t offset_2 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_2, 4);
 
-    uint64_t third_offset = allocator.pmem_alloc() - heap.get_pmem_ptr();
-    EXPECT_EQ(third_offset, 6);
+    uint64_t offset_3 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_3, 6);
 
-    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + first_offset));
-    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + second_offset));
-    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + third_offset));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_2));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_3));
 
-    allocator.pmem_free(heap.get_pmem_ptr() + third_offset);
+    allocator.pmem_free(heap.get_pmem_ptr() + offset_3);
 
-    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + first_offset));
-    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + second_offset));
-    EXPECT_FALSE(allocator.is_allocated(heap.get_pmem_ptr() + third_offset));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_2));
+    EXPECT_FALSE(allocator.is_allocated(heap.get_pmem_ptr() + offset_3));
+}
+
+TEST(pmem_allocator, free_last_and_allocate)
+{
+    temp_file file(get_temp_file_name("heap"));
+    persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
+    pmem_allocator allocator(heap.get_pmem_ptr(), 1, 200, true);
+
+    uint64_t offset_1 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_1, 2);
+
+    uint64_t offset_2 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_2, 4);
+
+    uint64_t offset_3 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_3, 6);
+
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_2));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_3));
+
+    allocator.pmem_free(heap.get_pmem_ptr() + offset_3);
+
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_2));
+    EXPECT_FALSE(allocator.is_allocated(heap.get_pmem_ptr() + offset_3));
+
+    uint64_t offset_4 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_4, 6);
+
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_2));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_4));
+}
+
+TEST(pmem_allocator, free_middle)
+{
+    temp_file file(get_temp_file_name("heap"));
+    persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
+    pmem_allocator allocator(heap.get_pmem_ptr(), 1, 200, true);
+
+    uint64_t offset_1 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_1, 2);
+
+    uint64_t offset_2 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_2, 4);
+
+    uint64_t offset_3 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_3, 6);
+
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_2));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_3));
+
+    allocator.pmem_free(heap.get_pmem_ptr() + offset_2);
+
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_FALSE(allocator.is_allocated(heap.get_pmem_ptr() + offset_2));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_3));
+}
+
+TEST(pmem_allocator, free_middle_and_allocate)
+{
+    temp_file file(get_temp_file_name("heap"));
+    persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
+    pmem_allocator allocator(heap.get_pmem_ptr(), 1, 200, true);
+
+    uint64_t offset_1 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_1, 2);
+
+    uint64_t offset_2 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_2, 4);
+
+    uint64_t offset_3 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_3, 6);
+
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_2));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_3));
+
+    allocator.pmem_free(heap.get_pmem_ptr() + offset_2);
+
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_FALSE(allocator.is_allocated(heap.get_pmem_ptr() + offset_2));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_3));
+
+    uint64_t offset_4 = allocator.pmem_alloc() - heap.get_pmem_ptr();
+    EXPECT_EQ(offset_4, 4);
+
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_1));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_4));
+    EXPECT_TRUE(allocator.is_allocated(heap.get_pmem_ptr() + offset_3));
 }
