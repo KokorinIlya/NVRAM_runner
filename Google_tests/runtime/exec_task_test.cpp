@@ -40,7 +40,7 @@ TEST(exec_task, cas_single_successful)
     uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
     global_storage<total_thread_count_holder>::set_object(total_thread_count_holder(total_thread_number));
-    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
+    uint32_t* thread_matrix = (uint32_t*) (heap.get_pmem_ptr() + 8);
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -119,7 +119,7 @@ TEST(exec_task, cas_single_failed)
     uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
     global_storage<total_thread_count_holder>::set_object(total_thread_count_holder(total_thread_number));
-    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
+    uint32_t* thread_matrix = (uint32_t*) (heap.get_pmem_ptr() + 8);
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -198,7 +198,7 @@ TEST(exec_task, cas_two_successful)
     uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
     global_storage<total_thread_count_holder>::set_object(total_thread_count_holder(total_thread_number));
-    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
+    uint32_t* thread_matrix = (uint32_t*) (heap.get_pmem_ptr() + 8);
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -334,7 +334,7 @@ TEST(exec_task, cas_failed_after_successful)
     uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
     global_storage<total_thread_count_holder>::set_object(total_thread_count_holder(total_thread_number));
-    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
+    uint32_t* thread_matrix = (uint32_t*) (heap.get_pmem_ptr() + 8);
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -463,7 +463,7 @@ TEST(exec_task, cas_successful_after_failed)
     uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
     global_storage<total_thread_count_holder>::set_object(total_thread_count_holder(total_thread_number));
-    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
+    uint32_t* thread_matrix = (uint32_t*) (heap.get_pmem_ptr() + 8);
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;

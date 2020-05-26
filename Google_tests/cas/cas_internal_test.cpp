@@ -13,7 +13,7 @@ TEST(cas_internal, single_successful)
     persistent_memory_holder heap(file.file_name, false, PMEM_HEAP_SIZE);
     uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
-    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
+    uint32_t* thread_matrix = (uint32_t*) (heap.get_pmem_ptr() + 8);
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -54,7 +54,7 @@ TEST(cas_internal, single_failed)
 
     uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
-    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
+    uint32_t* thread_matrix = (uint32_t*) (heap.get_pmem_ptr() + 8);
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -95,7 +95,7 @@ TEST(cas_internal, two_successful)
 
     uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
-    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
+    uint32_t* thread_matrix = (uint32_t*) (heap.get_pmem_ptr() + 8);
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -162,7 +162,7 @@ TEST(cas_internal, failed_after_successful)
 
     uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
-    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
+    uint32_t* thread_matrix = (uint32_t*) (heap.get_pmem_ptr() + 8);
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;
@@ -222,7 +222,7 @@ TEST(cas_internal, successful_after_failed)
 
     uint64_t* var = (uint64_t*) heap.get_pmem_ptr();
     uint32_t total_thread_number = 4;
-    uint32_t* thread_matrix = (uint32_t*) heap.get_pmem_ptr() + 8;
+    uint32_t* thread_matrix = (uint32_t*) (heap.get_pmem_ptr() + 8);
 
     uint64_t initial_thread_number_and_initial_value;
     uint8_t* initial_thread_number_and_initial_value_ptr = (uint8_t*) &initial_thread_number_and_initial_value;

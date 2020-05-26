@@ -21,6 +21,7 @@ add_executable(
         ../code/runtime/exec_task.cpp
         ../code/runtime/restoration.cpp
         ../code/allocation/pmem_allocator.cpp
+        ../code/model/tasks.cpp
         blocking_queue/queue_test.cpp
         persistent_stack/test_persistent_stack.cpp
         common/test_utils.cpp

@@ -10,6 +10,10 @@
 #include "../model/cur_thread_id_holder.h"
 #include "../model/total_thread_count_holder.h"
 #include "../persistent_stack/call.h"
+#include <iostream>
+#include <unistd.h>
+
+#define CAS_TEST
 
 bool cas_internal(uint64_t* var,
                   uint32_t expected_value,
@@ -46,7 +50,7 @@ bool cas_internal(uint64_t* var,
         return false;
     }
 
-#ifdef CAS_TEST
+#ifdef CAS_TEST_DELAY
     usleep(1000000);
 #endif
 
@@ -73,7 +77,7 @@ bool cas_internal(uint64_t* var,
         pmem_do_flush(thread_matrix + index, 4);
     }
 
-#ifdef CAS_TEST
+#ifdef CAS_TEST_DELAY
     usleep(1000000);
 #endif
 
@@ -151,7 +155,7 @@ bool cas_recover_internal(uint64_t* var,
     uint32_t cur_value;
     std::memcpy(&cur_value, last_thread_number_and_cur_value_ptr + 4, 4);
 
-#ifdef CAS_TEST
+#ifdef CAS_TEST_DELAY
     usleep(1000000);
 #endif
 
@@ -164,7 +168,7 @@ bool cas_recover_internal(uint64_t* var,
         return true;
     }
 
-#ifdef CAS_TEST
+#ifdef CAS_TEST_DELAY
     usleep(1000000);
 #endif
 
@@ -183,7 +187,7 @@ bool cas_recover_internal(uint64_t* var,
         }
     }
 
-#ifdef CAS_TEST
+#ifdef CAS_TEST_DELAY
     usleep(1000000);
 #endif
 
@@ -228,8 +232,8 @@ void cas_common(const uint8_t* args, bool call_recover)
     uint32_t cur_thread_id = thread_local_owning_storage<cur_thread_id_holder>::get_const_object().cur_thread_id;
 
     uint8_t* pmem_start_address = global_non_owning_storage<persistent_memory_holder>::ptr->get_pmem_ptr();
-    uint64_t* var = (uint64_t*) pmem_start_address + var_offset;
-    uint32_t* thread_matrix = (uint32_t*) pmem_start_address + thread_matrix_offset;
+    uint64_t* var = (uint64_t*) (pmem_start_address + var_offset);
+    uint32_t* thread_matrix = (uint32_t*) (pmem_start_address + thread_matrix_offset);
 
     bool result;
     if (call_recover)
@@ -255,10 +259,9 @@ void cas_common(const uint8_t* args, bool call_recover)
         );
     }
 
-#ifdef CAS_TEST
+#ifdef CAS_TEST_DELAY
     usleep(1000000);
 #endif
-
     if (result)
     {
         write_answer(std::vector<uint8_t>({0x1}));
@@ -267,6 +270,21 @@ void cas_common(const uint8_t* args, bool call_recover)
     {
         write_answer(std::vector<uint8_t>({0x0}));
     }
+
+#ifdef CAS_TEST
+    std::string message = "CAS: var_offset = " +
+                          std::to_string(var_offset) +
+                          ", expected_value = " +
+                          std::to_string(expected_value) +
+                          ", new_value = " +
+                          std::to_string(new_value) +
+                          ", thread id = "+
+                          std::to_string(cur_thread_id) +
+                          ", result = " +
+                          std::to_string(result) +
+                          "\n";
+    std::cerr << message;
+#endif
 }
 
 void cas(const uint8_t* args)

@@ -57,7 +57,7 @@ T blocking_queue<T>::take()
     {
         cv.wait(lock);
     }
-    T result = queue.front();
+    T result = std::move(queue.front());
     queue.pop();
     return result;
 }

@@ -181,6 +181,7 @@ void pmem_allocator::pmem_free(uint8_t* ptr)
 
 bool pmem_allocator::is_allocated(uint8_t* ptr)
 {
+    std::unique_lock lock(mutex);
     uint64_t block_num = get_block_num(ptr - heap_ptr);
     if (block_num > allocation_border)
     {

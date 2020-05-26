@@ -33,12 +33,20 @@ uint64_t get_cache_line_aligned_address(uint64_t address);
 /**
  * Returns true if address is part of caller threads's persistent stack and false otherwise.
  * If caller thread doesn't have persistent stack
- * (i.e. thread_local_non_owning_storage<persistent_memory_holder> hasn't been set) std::runtime_error
+ * (i.e. thread_local_non_owning_storage<persistent_memory_holder> hasn't been set) behaviour of function is undefined.
  * is thrown.
  * @param address - address.
  * @return true if address is part of caller threads's persistent stack and false otherwise
- * @throws std::runtime_error if caller thread doesn't have persistent stack.
  */
 bool is_stack_address(const uint8_t* address);
+
+/**
+ * Returns true if address is part of global persistent heap and false otherwise.
+ * If persistent heap doesn't exist, (i.e.global_non_owning_storage<persistent_memory_holder> hasn't been set)
+ * behaviour of function is undefined.
+ * @param address - address.
+ * @return true if address is part of global persistent heap and false otherwise
+ */
+bool is_heap_address(const uint8_t* address);
 
 #endif //DIPLOM_PMEM_UTILS_H

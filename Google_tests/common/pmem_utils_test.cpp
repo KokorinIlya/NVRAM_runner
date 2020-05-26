@@ -5,6 +5,7 @@
 #include "test_utils.h"
 #include "../../code/persistent_memory/persistent_memory_holder.h"
 #include "../../code/storage/thread_local_non_owning_storage.h"
+#include "../../code/storage/global_non_owning_storage.h"
 #include <thread>
 #include <functional>
 #include <sys/types.h>
@@ -105,6 +106,25 @@ TEST(pmem_utils, address_in_stack_multithreading_test)
     for (std::thread& cur_thread: threads)
     {
         cur_thread.join();
+    }
+}
+
+TEST(pmem_utils, address_in_heap_test)
+{
+    temp_file file(get_temp_file_name("heap"));
+    persistent_memory_holder p_heap(file.file_name, false, PMEM_STACK_SIZE);
+    global_non_owning_storage<persistent_memory_holder>::ptr = &p_heap;
+    for (uint32_t i = 1; i < 100; i++)
+    {
+        EXPECT_FALSE(is_heap_address(p_heap.get_pmem_ptr() - i));
+    }
+    for (uint32_t i = 0; i < PMEM_HEAP_SIZE; i++)
+    {
+        EXPECT_TRUE(is_heap_address(p_heap.get_pmem_ptr() + i));
+    }
+    for (uint32_t i = 0; i < 100; i++)
+    {
+        EXPECT_FALSE(is_heap_address(p_heap.get_pmem_ptr() + PMEM_HEAP_SIZE + i));
     }
 }
 

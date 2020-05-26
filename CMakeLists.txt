@@ -24,6 +24,7 @@ add_executable(
         code/runtime/exec_task.cpp
         code/runtime/restoration.cpp
         code/allocation/pmem_allocator.cpp
+        code/model/tasks.cpp
 )
 target_link_libraries(Diplom pmem pthread)
 add_subdirectory(Google_tests)

@@ -19,7 +19,7 @@ public:
      * otherwise, reads allocation information and restores state of the allocator before the crash
      * (or end of the work).
      * @param _heap_ptr - pointer to the beginning of the heap.
-     * @param _block_size - size of blocks to allocate.
+     * @param _block_size - size of blocks to allocate (in bytes).
      * @param _max_border - maximal possible value of allocation border.
      * @param init_new - if true, initialized allocator from the ground up, otherwise restores allocator
      *                   state.
