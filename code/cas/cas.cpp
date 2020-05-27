@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #define CAS_TEST
+#define CAS_TEST_DELAY
 
 bool cas_internal(uint64_t* var,
                   uint32_t expected_value,

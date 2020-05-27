@@ -12,6 +12,7 @@ void do_restoration(persistent_memory_holder& persistent_stack)
         throw std::runtime_error("Cannot perform system restoration, when system is not in recovery mode");
     }
     ram_stack r_stack = read_stack(persistent_stack);
+    thread_local_owning_storage<ram_stack>::set_object(r_stack);
     while (r_stack.size() > 1)
     {
         stack_frame const& top_frame = r_stack.get_last_frame().get_frame();
