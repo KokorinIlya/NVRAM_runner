@@ -11,7 +11,7 @@
 #include "code/model/system_mode.h"
 #include "code/persistent_memory/persistent_memory_holder.h"
 #include <vector>
-#include "code/persistent_stack/call.h"
+#include "code/persistent_stack/persistent_stack.h"
 #include "code/persistent_stack/ram_stack.h"
 #include "code/frame/stack_frame.h"
 #include <thread>
@@ -24,6 +24,7 @@
 #include "code/model/function_address_holder.h"
 #include "code/runtime/exec_task.h"
 #include "code/runtime/restoration.h"
+#include "code/runtime/call.h"
 
 int main(int argc, char** argv)
 {

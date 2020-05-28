@@ -1,6 +1,6 @@
 #include "restoration.h"
 #include "../persistent_stack/ram_stack.h"
-#include "../persistent_stack/call.h"
+#include "../persistent_stack/persistent_stack.h"
 #include "../storage/global_storage.h"
 #include "../model/system_mode.h"
 #include "../model/function_address_holder.h"

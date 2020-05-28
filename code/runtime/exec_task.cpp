@@ -3,10 +3,12 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
-#include "../persistent_stack/call.h"
+#include "../persistent_stack/persistent_stack.h"
 #include "../storage/global_non_owning_storage.h"
 #include <cassert>
 #include "../common/pmem_utils.h"
+#include "answer.h"
+#include "call.h"
 #include <optional>
 
 void exec_task_common(const uint8_t* args, bool call_recover)

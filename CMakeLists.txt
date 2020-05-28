@@ -12,7 +12,7 @@ add_executable(
         main.cpp
         code/persistent_memory/persistent_memory_holder.cpp
         code/persistent_stack/ram_stack.cpp
-        code/persistent_stack/call.cpp
+        code/persistent_stack/persistent_stack.cpp
         code/common/pmem_utils.cpp
         code/model/function_address_holder.cpp
         code/common/constants_and_types.cpp
@@ -25,6 +25,8 @@ add_executable(
         code/runtime/restoration.cpp
         code/allocation/pmem_allocator.cpp
         code/model/tasks.cpp
+        code/runtime/answer.cpp
+        code/runtime/call.cpp
 )
 target_link_libraries(Diplom pmem pthread)
 add_subdirectory(Google_tests)

@@ -14,8 +14,9 @@
 #include "../../code/model/cur_thread_id_holder.h"
 #include "../../code/model/total_thread_count_holder.h"
 #include "../../code/persistent_stack/ram_stack.h"
-#include "../../code/persistent_stack/call.h"
+#include "../../code/persistent_stack/persistent_stack.h"
 #include "../../code/runtime/exec_task.h"
+#include "../../code/runtime/call.h"
 
 TEST(exec_task, cas_single_successful)
 {
