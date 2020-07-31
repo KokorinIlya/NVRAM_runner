@@ -25,6 +25,22 @@
 #include "code/runtime/exec_task.h"
 #include "code/runtime/restoration.h"
 #include "code/runtime/call.h"
+#include <variant>
+#include "code/common/variant_utils.h"
+
+void read_var(uint64_t var_offset)
+{
+    const uint8_t* pmem_start_address = global_non_owning_storage<persistent_memory_holder>::ptr->get_pmem_ptr();
+    const uint64_t* var = (uint64_t*) (pmem_start_address + var_offset);
+    uint64_t last_thread_number_and_cur_value = __atomic_load_n(var, __ATOMIC_SEQ_CST);
+    const uint8_t* const last_thread_number_and_cur_value_ptr = (const uint8_t*) &last_thread_number_and_cur_value;
+    uint32_t cur_value;
+    std::memcpy(&cur_value, last_thread_number_and_cur_value_ptr + 4, 4);
+    uint32_t cur_thread_id = thread_local_owning_storage<cur_thread_id_holder>::get_const_object().cur_thread_id;
+    std::string msg = "register value = " + std::to_string(cur_value) +
+                      ", cur thread id = " + std::to_string(cur_thread_id) + "\n";
+    std::cerr << msg;
+}
 
 int main(int argc, char** argv)
 {
@@ -148,7 +164,7 @@ int main(int argc, char** argv)
         /*
          * Init queue with tasks
          */
-        blocking_queue<cas_task> tasks_queue;
+        blocking_queue<std::variant<cas_task, read_task>> tasks_queue;
 
         /*
          * Init worker threads
@@ -174,57 +190,72 @@ int main(int argc, char** argv)
                  */
                 while (true)
                 {
-                    cas_task cur_cas_task = tasks_queue.take();
+                    std::variant<cas_task, read_task> cur_task = tasks_queue.take();
+                    std::visit(
+                            make_visitor(
+                                    [](const cas_task& cur_cas_task)
+                                    {
+                                        /*
+                                         * Serialize CAS args
+                                         */
+                                        std::vector<uint8_t> args(33);
+                                        uint64_t cur_offset = 0;
 
-                    /*
-                     * Serialize CAS args
-                     */
-                    std::vector<uint8_t> args(33);
-                    uint64_t cur_offset = 0;
+                                        /*
+                                         * Write 1 byte of task type
+                                         */
+                                        std::memcpy(args.data() + cur_offset, &cas_task::CAS_TYPE, 1);
+                                        cur_offset += 1;
 
-                    /*
-                     * Write 1 byte of task type
-                     */
-                    std::memcpy(args.data() + cur_offset, &cas_task::CAS_TYPE, 1);
-                    cur_offset += 1;
+                                        /*
+                                         * Write 8 bytes of answer offset
+                                         */
+                                        std::memcpy(args.data() + cur_offset, &cur_cas_task.answer_offset, 8);
+                                        cur_offset += 8;
 
-                    /*
-                     * Write 8 bytes of answer offset
-                     */
-                    std::memcpy(args.data() + cur_offset, &cur_cas_task.answer_offset, 8);
-                    cur_offset += 8;
+                                        /*
+                                         * Write 8 bytes of variable offset
+                                         */
+                                        std::memcpy(args.data() + cur_offset, &cur_cas_task.var_offset, 8);
+                                        cur_offset += 8;
 
-                    /*
-                     * Write 8 bytes of variable offset
-                     */
-                    std::memcpy(args.data() + cur_offset, &cur_cas_task.var_offset, 8);
-                    cur_offset += 8;
+                                        /*
+                                         * Write 4 bytes of expected value
+                                         */
+                                        std::memcpy(args.data() + cur_offset, &cur_cas_task.expected_value, 4);
+                                        cur_offset += 4;
 
-                    /*
-                     * Write 4 bytes of expected value
-                     */
-                    std::memcpy(args.data() + cur_offset, &cur_cas_task.expected_value, 4);
-                    cur_offset += 4;
+                                        /*
+                                         * Write 4 bytes of new value
+                                         */
+                                        std::memcpy(args.data() + cur_offset, &cur_cas_task.new_value, 4);
+                                        cur_offset += 4;
 
-                    /*
-                     * Write 4 bytes of new value
-                     */
-                    std::memcpy(args.data() + cur_offset, &cur_cas_task.new_value, 4);
-                    cur_offset += 4;
+                                        /*
+                                         * Write 8 bytes of thread matrix offset
+                                         */
+                                        std::memcpy(
+                                                args.data() + cur_offset,
+                                                &cur_cas_task.thread_matrix_offset,
+                                                8
+                                        );
 
-                    /*
-                     * Write 8 bytes of thread matrix offset
-                     */
-                    std::memcpy(args.data() + cur_offset, &cur_cas_task.thread_matrix_offset, 8);
-
-                    /*
-                     * Wait for CAS completion and continue
-                     */
-                    do_call(
-                            "exec_task",
-                            args,
-                            std::optional<std::vector<uint8_t>>(),
-                            std::make_optional(std::vector<uint8_t>({0xFF}))
+                                        /*
+                                         * Wait for CAS completion and continue
+                                         */
+                                        do_call(
+                                                "exec_task",
+                                                args,
+                                                std::optional<std::vector<uint8_t>>(),
+                                                std::make_optional(std::vector<uint8_t>({0xFF}))
+                                        );
+                                    },
+                                    [](const read_task& cur_read_task)
+                                    {
+                                        read_var(cur_read_task.var_offset);
+                                    }
+                            ),
+                            cur_task
                     );
                 }
 #pragma clang diagnostic pop
@@ -235,7 +266,7 @@ int main(int argc, char** argv)
         /*
          * In main thread: add some tasks to worker queue
          */
-        std::vector<cas_task> tasks(
+        std::vector<std::variant<cas_task, read_task>> tasks(
                 {
                         cas_task(var_offset,
                                  42,
@@ -257,9 +288,11 @@ int main(int argc, char** argv)
                                  48,
                                  allocator.pmem_alloc() - heap_holder.get_pmem_ptr(),
                                  thread_matrix_offset),
+                        read_task(var_offset),
+                        read_task(var_offset)
                 }
         );
-        for (const cas_task& cur_task: tasks)
+        for (const std::variant<cas_task, read_task>& cur_task: tasks)
         {
             tasks_queue.push(cur_task);
         }

@@ -25,4 +25,12 @@ public:
     static const uint8_t CAS_TYPE = 0x0;
 };
 
+struct read_task
+{
+public:
+    explicit read_task(uint64_t _var_offset);
+
+    const uint64_t var_offset;
+};
+
 #endif //DIPLOM_TASKS_H

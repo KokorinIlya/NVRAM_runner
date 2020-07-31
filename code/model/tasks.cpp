@@ -11,3 +11,6 @@ cas_task::cas_task(uint64_t _var_offset,
         answer_offset(_answer_offset),
         thread_matrix_offset(_thread_matrix_offset)
 {}
+
+read_task::read_task(uint64_t _var_offset) : var_offset(_var_offset)
+{}
